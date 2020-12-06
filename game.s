@@ -4,19 +4,28 @@
 .data
 .include "sprites/misc/background.data"
 
-.include "sprites/char_torso.data"
-.include "sprites/char_legs_idle.data"
-.include "sprites/walking_1.data"
+.include "sprites/static_char/char_torso.data"
+.include "sprites/static_char/char_legs_idle.data"
+.include "sprites/static_char/walking_1.data"
 
-.include "sprites/mid_kick/mid_kick_0.data"
+.include "sprites/generic/kick.data"
+
 .include "sprites/mid_kick/mid_kick_1.data"
 .include "sprites/mid_kick/mid_kick_2.data"
+
+.include "sprites/high_kick/high_kick_1.data"
+.include "sprites/high_kick/high_kick_2.data"
+
+.include "sprites/sj_kick/sj_kick.data"
 
 CHAR_POS: .half 32, 168		# top left x, y
 CHAR_WALKING: .byte 0, 0	# direction, curr sprite
 
 CHAR_ATTACK: .byte 0, 0		# attack type, curr sprite
-# 0: MID KICK
+# 0: STATIC (non-attacking)
+# 1: MID KICK
+# 2: HIGH KICK
+# 3: SHORT JAB KICK
 
 .text
 		render(background, 0, 0, 320, 240, zero, 0, 0)
@@ -36,9 +45,16 @@ M_LOOP:		call RECEIVE_INPUT
 		
 		li t1,1
 		beq t0,t1,MID_KICK
+		li t1,2
+		beq t0,t1,HIGH_KICK
+		li t1,3
+		beq t0,t1,SJ_KICK
 		
 		j FRAME_END
 
+#################################
+#	MID KICK MOVEMENT	#
+#################################
 MID_KICK:	la t1,CHAR_ATTACK
 		lbu t0,1(t1)		# current sprite
 		
@@ -55,8 +71,8 @@ MID_KICK:	la t1,CHAR_ATTACK
 		la t0,CHAR_ATTACK
 		sh zero,0(t0)
 		j FRAME_END
-		
-MID_KICK_0:	render_a(mid_kick_0, s1, s2, 48, 56, s0, zero, zero)
+
+MID_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
 		j MID_KICK_END
 MID_KICK_1:	render_a(mid_kick_1, s1, s2, 56, 56, s0, zero, zero)
 		j MID_KICK_END
@@ -65,13 +81,70 @@ MID_KICK_2:	render_a(mid_kick_2, s1, s2, 76, 56, s0, zero, zero)
 		
 MID_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
 		j FRAME_END
+
+#################################
+#	HIGH KICK MOVEMENT	#
+#################################
+HIGH_KICK:	la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
 		
+		beqz t0,HIGH_KICK_0
+		li t1,1
+		beq t0,t1,HIGH_KICK_1
+		li t1,2
+		beq t0,t1,HIGH_KICK_2
+		li t1,3
+		beq t0,t1,HIGH_KICK_1
+		li t1,4
+		beq t0,t1,HIGH_KICK_0
+		
+		la t0,CHAR_ATTACK
+		sh zero,0(t0)
+		j FRAME_END
+		
+HIGH_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
+		j HIGH_KICK_END
+HIGH_KICK_1:	render_a(high_kick_1, s1, s2, 56, 56, s0, zero, zero)
+		j HIGH_KICK_END
+HIGH_KICK_2:	render_a(high_kick_2, s1, s2, 68, 56, s0, zero, zero)
+		j HIGH_KICK_END
+		
+HIGH_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
+		j FRAME_END
+
+#########################################
+#	SHORT JAB KICK MOVEMENT		#
+#########################################
+SJ_KICK:	la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
+		
+		beqz t0,SJ_KICK_0
+		li t1,4
+		ble t0,t1,SJ_KICK_1
+		li t1,5
+		beq t0,t1,SJ_KICK_0
+		
+		la t0,CHAR_ATTACK
+		sh zero,0(t0)
+		j FRAME_END
+		
+SJ_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
+		j SJ_KICK_END
+SJ_KICK_1:	render_a(sj_kick, s1, s2, 56, 56, s0, zero, zero)
+		j SJ_KICK_END
+		
+SJ_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
+		j FRAME_END
+
+######################################
+#	NON-ATTACKING MOVEMENT	     #
+######################################
 STATIC_CHAR:	render_a(char_torso, s1, s2, 48, 32, s0, zero, zero)
 		addi s2,s2,32
 
-		#################################
-		#	WALKING ANIMATION	#
-		#################################
+#################################
+#	WALKING ANIMATION	#
+#################################
 		lb t0,CHAR_WALKING	# direction
 		beqz t0,WALK_IDLE	# if not moving (direction == 0) draw idle sprite
 		
@@ -105,15 +178,17 @@ WALK_REV_CONT:	li t1,48
 		j FRAME_END
 
 WALK_IDLE:	render_a(char_legs_idle, s1, s2, 48, 24, s0, zero, zero)
+
+##############################
 FRAME_END:	toggle_frame()
 		j M_LOOP
 
-		# exit
 		li a7,10
 		ecall
 
-# 4px per frame
-# Input
+#########################
+#	USER INPUT	#
+#########################
 RECEIVE_INPUT:	li t1,0xFF200000
 		lw t0,0(t1)
 		andi t0,t0,0x0001
@@ -126,6 +201,10 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		beq t0,t1,RI_MOVE_LEFT
   		li t1,'D'
   		beq t0,t1,RI_MID_KICK
+  		li t1,'E'
+  		beq t0,t1,RI_HIGH_KICK
+  		li t1,'C'
+  		beq t0,t1,RI_SJ_KICK
   		
 REC_INPUT_CLN:	la t1,CHAR_WALKING
   		sh zero,0(t1)
@@ -153,11 +232,32 @@ RI_MOVE_LEFT:	lh t0,CHAR_POS
 		
 		j REC_INPUT_END
 
+# Mid kick (press D, shift + d)
 RI_MID_KICK:	lb t0,CHAR_ATTACK
 		bnez t0,REC_INPUT_CLN
 		
 		la t0,CHAR_ATTACK
 		li t1,1
+		sb t1,0(t0)
+		
+		j REC_INPUT_CLN
+
+# High kick (press E, shift + e)
+RI_HIGH_KICK:	lb t0,CHAR_ATTACK
+		bnez t0,REC_INPUT_CLN
+		
+		la t0,CHAR_ATTACK
+		li t1,2
+		sb t1,0(t0)
+		
+		j REC_INPUT_CLN
+
+# Short jab kick (press C, shift + c)
+RI_SJ_KICK:	lb t0,CHAR_ATTACK
+		bnez t0,REC_INPUT_CLN
+		
+		la t0,CHAR_ATTACK
+		li t1,3
 		sb t1,0(t0)
 		
 		j REC_INPUT_CLN
