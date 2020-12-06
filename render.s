@@ -9,7 +9,7 @@
 # a5 = frame (0 ou 1)						#
 # a6 = x0 inicial NA IMAGEM					#
 # a7 = y0 inicial NA IMAGEM					#
-#								#
+# Usa de t0 ate t4						#
 #################################################################
 .text
 RENDER:		li t0,0xFF0	# t0 = 0xFF0

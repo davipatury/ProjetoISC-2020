@@ -54,7 +54,7 @@ li t0,0xFF200604
 lw t1,0(t0)
 xori t1,t1,0x001
 sw t1,0(t0)
-li a0,100
+li a0,50
 li a7,32
 ecall	
 .end_macro
@@ -64,4 +64,19 @@ ecall
 la %y,CHAR_POS
 lh %x,0(%y)
 lh %y,2(%y)
+.end_macro
+
+# MEMORY
+.macro b_increment(%label, %value, %imm, %r, %r1)
+la %r1,%label
+lb %r,%imm(%r1)
+addi %r,%r,%value
+sb %r,%imm(%r1)
+.end_macro
+
+.macro b_decrement(%label, %value, %imm, %r, %r1)
+la %r1,%label
+lb %r,%imm(%r1)
+addi %r,%r,-%value
+sb %r,%imm(%r1)
 .end_macro
