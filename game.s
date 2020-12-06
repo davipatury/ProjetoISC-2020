@@ -3,29 +3,37 @@
 .align 2
 .data
 .include "sprites/misc/background.data"
-
 .include "sprites/static_char/char_torso.data"
 .include "sprites/static_char/char_legs_idle.data"
 .include "sprites/static_char/walking_1.data"
-
+.include "sprites/generic/crouch_block.data"
 .include "sprites/generic/kick.data"
-
 .include "sprites/mid_kick/mid_kick_1.data"
 .include "sprites/mid_kick/mid_kick_2.data"
-
 .include "sprites/high_kick/high_kick_1.data"
 .include "sprites/high_kick/high_kick_2.data"
-
 .include "sprites/sj_kick/sj_kick.data"
+.include "sprites/fwd_sweep/fwd_sweep_1.data"
+.include "sprites/fwd_sweep/fwd_sweep_2.data"
 
 CHAR_POS: .half 32, 168		# top left x, y
 CHAR_WALKING: .byte 0, 0	# direction, curr sprite
 
-CHAR_ATTACK: .byte 0, 0		# attack type, curr sprite
-# 0: STATIC (non-attacking)
-# 1: MID KICK
-# 2: HIGH KICK
-# 3: SHORT JAB KICK
+#################################
+# ATTACK TABLE			#
+#################################
+# 0: STATIC (non-attacking)	#
+#################################
+# FIRE BUTTON ATTACKS		#
+# 1: MID KICK			#
+# 2: HIGH KICK			#
+# 3: SHORT JAB KICK		#
+# 4: FORWARD SWEEP		#
+#################################
+# NON FIRE BUTTON ATTACKS	#
+#				#
+#################################
+CHAR_ATTACK: .byte 0, 0
 
 .text
 		render(background, 0, 0, 320, 240, zero, 0, 0)
@@ -49,6 +57,8 @@ M_LOOP:		call RECEIVE_INPUT
 		beq t0,t1,HIGH_KICK
 		li t1,3
 		beq t0,t1,SJ_KICK
+		li t1,4
+		beq t0,t1,FWD_SWEEP
 		
 		j FRAME_END
 
@@ -67,20 +77,14 @@ MID_KICK:	la t1,CHAR_ATTACK
 		beq t0,t1,MID_KICK_1
 		li t1,4
 		beq t0,t1,MID_KICK_0
-		
-		la t0,CHAR_ATTACK
-		sh zero,0(t0)
-		j FRAME_END
+		j ATTACK_END
 
 MID_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
-		j MID_KICK_END
+		j ATTACK_ANIM_E
 MID_KICK_1:	render_a(mid_kick_1, s1, s2, 56, 56, s0, zero, zero)
-		j MID_KICK_END
+		j ATTACK_ANIM_E
 MID_KICK_2:	render_a(mid_kick_2, s1, s2, 76, 56, s0, zero, zero)
-		j MID_KICK_END
-		
-MID_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
-		j FRAME_END
+		j ATTACK_ANIM_E
 
 #################################
 #	HIGH KICK MOVEMENT	#
@@ -97,20 +101,14 @@ HIGH_KICK:	la t1,CHAR_ATTACK
 		beq t0,t1,HIGH_KICK_1
 		li t1,4
 		beq t0,t1,HIGH_KICK_0
-		
-		la t0,CHAR_ATTACK
-		sh zero,0(t0)
-		j FRAME_END
+		j ATTACK_END
 		
 HIGH_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
-		j HIGH_KICK_END
+		j ATTACK_ANIM_E
 HIGH_KICK_1:	render_a(high_kick_1, s1, s2, 56, 56, s0, zero, zero)
-		j HIGH_KICK_END
+		j ATTACK_ANIM_E
 HIGH_KICK_2:	render_a(high_kick_2, s1, s2, 68, 56, s0, zero, zero)
-		j HIGH_KICK_END
-		
-HIGH_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
-		j FRAME_END
+		j ATTACK_ANIM_E
 
 #########################################
 #	SHORT JAB KICK MOVEMENT		#
@@ -123,18 +121,46 @@ SJ_KICK:	la t1,CHAR_ATTACK
 		ble t0,t1,SJ_KICK_1
 		li t1,5
 		beq t0,t1,SJ_KICK_0
-		
-		la t0,CHAR_ATTACK
-		sh zero,0(t0)
-		j FRAME_END
+		j ATTACK_END
 		
 SJ_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
-		j SJ_KICK_END
+		j ATTACK_ANIM_E
 SJ_KICK_1:	render_a(sj_kick, s1, s2, 56, 56, s0, zero, zero)
-		j SJ_KICK_END
+		j ATTACK_ANIM_E
+
+#########################################
+#	FORWARD SWEEP MOVEMENT		#
+#########################################
+FWD_SWEEP:	la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
 		
-SJ_KICK_END:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
+		beqz t0,FWD_SWEEP_0
+		li t1,1
+		beq t0,t1,FWD_SWEEP_1
+		li t1,2
+		beq t0,t1,FWD_SWEEP_2
+		li t1,3
+		beq t0,t1,FWD_SWEEP_1
+		li t1,4
+		beq t0,t1,FWD_SWEEP_0
+		j ATTACK_END
+		
+FWD_SWEEP_0:	render_a(crouch_block, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+FWD_SWEEP_1:	render_a(fwd_sweep_1, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+FWD_SWEEP_2:	render_a(fwd_sweep_2, s1, s2, 76, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+
+#########################################
+#	GENERIC ATTACK OPERATIONS	#
+#########################################
+ATTACK_ANIM_E:	b_increment(CHAR_ATTACK, 1, 1, t0, t1)
 		j FRAME_END
+
+ATTACK_END:	la t0,CHAR_ATTACK
+		sh zero,0(t0)
+		j STATIC_CHAR
 
 ######################################
 #	NON-ATTACKING MOVEMENT	     #
@@ -195,16 +221,12 @@ RECEIVE_INPUT:	li t1,0xFF200000
   	 	beq t0,zero,REC_INPUT_CLN
   		lw t0,4(t1)
 
-  		li t1,'d'
-  		beq t0,t1,RI_MOVE_RIGHT
-  		li t1,'a'
-  		beq t0,t1,RI_MOVE_LEFT
-  		li t1,'D'
-  		beq t0,t1,RI_MID_KICK
-  		li t1,'E'
-  		beq t0,t1,RI_HIGH_KICK
-  		li t1,'C'
-  		beq t0,t1,RI_SJ_KICK
+  		check_key('d', RI_MOVE_RIGHT, t0, t1)
+  		check_key('a', RI_MOVE_LEFT, t0, t1)
+  		check_key('D', RI_MID_KICK, t0, t1)
+  		check_key('E', RI_HIGH_KICK, t0, t1)
+  		check_key('C', RI_SJ_KICK, t0, t1)
+  		check_key('X', RI_FWD_SWEEP, t0, t1)
   		
 REC_INPUT_CLN:	la t1,CHAR_WALKING
   		sh zero,0(t1)
@@ -233,34 +255,13 @@ RI_MOVE_LEFT:	lh t0,CHAR_POS
 		j REC_INPUT_END
 
 # Mid kick (press D, shift + d)
-RI_MID_KICK:	lb t0,CHAR_ATTACK
-		bnez t0,REC_INPUT_CLN
-		
-		la t0,CHAR_ATTACK
-		li t1,1
-		sb t1,0(t0)
-		
-		j REC_INPUT_CLN
-
+RI_MID_KICK:	register_attack(1)
 # High kick (press E, shift + e)
-RI_HIGH_KICK:	lb t0,CHAR_ATTACK
-		bnez t0,REC_INPUT_CLN
-		
-		la t0,CHAR_ATTACK
-		li t1,2
-		sb t1,0(t0)
-		
-		j REC_INPUT_CLN
-
+RI_HIGH_KICK:	register_attack(2)
 # Short jab kick (press C, shift + c)
-RI_SJ_KICK:	lb t0,CHAR_ATTACK
-		bnez t0,REC_INPUT_CLN
-		
-		la t0,CHAR_ATTACK
-		li t1,3
-		sb t1,0(t0)
-		
-		j REC_INPUT_CLN
+RI_SJ_KICK:	register_attack(3)
+# Forward sweep (press X, shift + x)
+RI_FWD_SWEEP:	register_attack(4)
 
 REC_INPUT_END:	ret				# retorna
 

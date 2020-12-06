@@ -66,6 +66,20 @@ lh %x,0(%y)
 lh %y,2(%y)
 .end_macro
 
+.macro check_key(%n, %label, %r, %r1)
+li %r1,%n
+beq %r,%r1,%label
+.end_macro
+
+.macro register_attack(%n)
+lb t0,CHAR_ATTACK
+bnez t0,REC_INPUT_CLN
+la t0,CHAR_ATTACK
+li t1,%n
+sb t1,0(t0)
+j REC_INPUT_CLN
+.end_macro
+
 # MEMORY
 .macro b_increment(%label, %value, %imm, %r, %r1)
 la %r1,%label
