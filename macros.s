@@ -94,3 +94,17 @@ lb %r,%imm(%r1)
 addi %r,%r,-%value
 sb %r,%imm(%r1)
 .end_macro
+
+.macro h_increment(%label, %value, %imm, %r, %r1)
+la %r1,%label
+lh %r,%imm(%r1)
+addi %r,%r,%value
+sh %r,%imm(%r1)
+.end_macro
+
+.macro h_decrement(%label, %value, %imm, %r, %r1)
+la %r1,%label
+lh %r,%imm(%r1)
+addi %r,%r,-%value
+sh %r,%imm(%r1)
+.end_macro

@@ -42,7 +42,7 @@ RENDER:		li t0,0xFF0	# t0 = 0xFF0
 # t2 = endereço da frame
 RENDER_LOOP:	bgeu t2,t3,RENDER_L_EXIT	# if endereço atual >= endereço final THEN jump to RLE
 		lw t0,0(a0)	# carrega o conteudo da imagem no endereço a0 (imagem) em t0
-		li t1,0x38383838
+		li t1,0xc7c7c7c7
 		beq t0,t1,RENDER_LOOP_C
 		sw t0,0(t2)	# salva o conteudo da imagem no endereço t2 (frame)
 RENDER_LOOP_C:	addi a0,a0,4	# a0 += 4
