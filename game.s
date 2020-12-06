@@ -2,43 +2,6 @@
 
 .align 2
 .data
-.include "sprites/misc/background.data"
-
-.include "sprites/static_char/char_torso.data"
-.include "sprites/static_char/char_legs_idle.data"
-.include "sprites/static_char/walking_1.data"
-
-.include "sprites/generic/crouch_block.data"
-.include "sprites/generic/kick.data"
-
-.include "sprites/mid_kick/mid_kick_1.data"
-.include "sprites/mid_kick/mid_kick_2.data"
-
-.include "sprites/sj_kick/sj_kick.data"
-
-.include "sprites/fwd_sweep/fwd_sweep_1.data"
-.include "sprites/fwd_sweep/fwd_sweep_2.data"
-
-.include "sprites/bwd_sweep/bwd_sweep_1.data"
-.include "sprites/bwd_sweep/bwd_sweep_2.data"
-
-.include "sprites/roundhouse/roundhouse_1.data"
-.include "sprites/roundhouse/roundhouse_2.data"
-.include "sprites/roundhouse/roundhouse_3.data"
-.include "sprites/roundhouse/roundhouse_4.data"
-.include "sprites/roundhouse/roundhouse_5.data"
-
-.include "sprites/high_bk_kick/high_bk_kick_1.data"
-.include "sprites/high_bk_kick/high_bk_kick_2.data"
-.include "sprites/high_bk_kick/high_bk_kick_3.data"
-
-.include "sprites/flying_kick/flying_kick_1.data"
-.include "sprites/flying_kick/flying_kick_2.data"
-.include "sprites/flying_kick/flying_kick_3.data"
-
-.include "sprites/high_kick/high_kick_1.data"
-.include "sprites/high_kick/high_kick_2.data"
-
 CHAR_POS: .half 32, 168		# top left x, y
 CHAR_WALKING: .byte 0, 0	# direction, curr sprite
 
@@ -63,7 +26,20 @@ CHAR_WALKING: .byte 0, 0	# direction, curr sprite
 CHAR_ATTACK: .byte 0, 0
 
 .text
-		render(background, 0, 0, 320, 240, zero, 0, 0)
+
+SPLASH:		reset_frame
+		render(splash, 0, 0, 320, 240, zero, 0, 0)
+
+SPLASH_LOOP:	li t1,0xFF200000
+		lw t0,0(t1)
+		andi t0,t0,0x0001
+  	 	beq t0,zero,SPLASH_LOOP
+  		lw t0,4(t1)
+ 
+  		li t1,'1'
+  		bne t0,t1,SPLASH_LOOP
+
+GAME:		render(background, 0, 0, 320, 240, zero, 0, 0)
 		li t0, 1
 		render(background, 0, 0, 320, 240, t0, 0, 0)
 
@@ -467,5 +443,50 @@ RI_HIGH_KICK:	register_attack(8)
 
 REC_INPUT_END:	ret	# retorna
 
+.align 2
+.data
+.include "sprites/misc/splash.data"
+
+.include "sprites/misc/background.data"
+.include "sprites/misc/background1.data"
+.include "sprites/misc/background2.data"
+.include "sprites/misc/background3.data"
+
+.include "sprites/static_char/char_torso.data"
+.include "sprites/static_char/char_legs_idle.data"
+.include "sprites/static_char/walking_1.data"
+
+.include "sprites/generic/crouch_block.data"
+.include "sprites/generic/kick.data"
+
+.include "sprites/mid_kick/mid_kick_1.data"
+.include "sprites/mid_kick/mid_kick_2.data"
+
+.include "sprites/sj_kick/sj_kick.data"
+
+.include "sprites/fwd_sweep/fwd_sweep_1.data"
+.include "sprites/fwd_sweep/fwd_sweep_2.data"
+
+.include "sprites/bwd_sweep/bwd_sweep_1.data"
+.include "sprites/bwd_sweep/bwd_sweep_2.data"
+
+.include "sprites/roundhouse/roundhouse_1.data"
+.include "sprites/roundhouse/roundhouse_2.data"
+.include "sprites/roundhouse/roundhouse_3.data"
+.include "sprites/roundhouse/roundhouse_4.data"
+.include "sprites/roundhouse/roundhouse_5.data"
+
+.include "sprites/high_bk_kick/high_bk_kick_1.data"
+.include "sprites/high_bk_kick/high_bk_kick_2.data"
+.include "sprites/high_bk_kick/high_bk_kick_3.data"
+
+.include "sprites/flying_kick/flying_kick_1.data"
+.include "sprites/flying_kick/flying_kick_2.data"
+.include "sprites/flying_kick/flying_kick_3.data"
+
+.include "sprites/high_kick/high_kick_1.data"
+.include "sprites/high_kick/high_kick_2.data"
+
+.text
 .include "render.s"
 .include "music.s"

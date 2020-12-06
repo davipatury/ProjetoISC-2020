@@ -59,6 +59,17 @@ li a7,32
 ecall	
 .end_macro
 
+.macro reset_frame()
+li t0,0xFF200604
+sw zero,0(t0)
+.end_macro
+
+.macro set_frame(%v)
+li t0,%v
+li t1,0xFF200604
+sw t0,0(t0)
+.end_macro
+
 # CHAR CONTROL
 .macro load_char_pos(%x, %y)
 la %y,CHAR_POS
