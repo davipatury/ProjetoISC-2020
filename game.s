@@ -407,7 +407,10 @@ STATIC_CHAR:	render_a(char_torso, s1, s2, 48, 32, s0, zero, zero)
 		sb zero,1(t1)		# else restart animation counter
 		j WALK_IDLE		# draw idle sprite
 
-WALK_CONT:	li t1,48
+WALK_CONT:	li a7,1
+		mv a0,t0
+		ecall
+		li t1,48
 		mul t1,t1,t0		# curr sprite * 48 = x in spritesheet
 		render_a(walking_1, s1, s2, 48, 24, s0, t1, zero)
 		b_increment(CHAR_WALKING, 1, 1, t0, t1)
@@ -415,12 +418,18 @@ WALK_CONT:	li t1,48
 
 WALK_REV:	la t1,CHAR_WALKING
 		lbu t0,1(t1)			# current sprite
-		bgt t0,zero,WALK_REV_CONT	# if curr sprite < 0 then continue animation
-		li t2,2				# goto last sprite
+		beqz t0,WALK_REV_SET
+		bgtz t0,WALK_REV_CONT		# if curr sprite > 0 then continue animation
+		li t2,3				# goto last sprite
 		sb t2,1(t1)			# else restart animation counter
 		j WALK_IDLE			# draw idle sprite
 
+WALK_REV_SET:	li t0,3
+		sb t0,1(t1)
+		j WALK_REV_CONT
+
 WALK_REV_CONT:	li t1,48
+		addi t0,t0,-1
 		mul t1,t1,t0		# curr sprite * 48 = x in spritesheet
 		render_a(walking_1, s1, s2, 48, 24, s0, t1, zero)
 		b_decrement(CHAR_WALKING, 1, 1, t0, t1)
@@ -469,9 +478,10 @@ REC_INPUT_CLN:	la t1,CHAR_WALKING
 RI_MOVE_RIGHT:	lb t0,CHAR_ATTACK
 		bnez t0,REC_INPUT_CLN
 		h_increment(CHAR_POS, 4, 0, t0, t1)
+
 		la t1,CHAR_WALKING
-		li t0,1			# 00000000 00000001 <- curr sprite = 0, dir = 1
-		sh t0,0(t1)
+		li t0,1
+		sb t0,0(t1)
 		
 		j REC_INPUT_END
 
@@ -480,8 +490,8 @@ RI_MOVE_LEFT:	lb t0,CHAR_ATTACK
 		bnez t0,REC_INPUT_CLN
 		h_decrement(CHAR_POS, 4, 0, t0, t1)
 		la t1,CHAR_WALKING
-		li t0,0x2ff		# 00000010 11111111 <- curr sprite = 2, dir = -1
-		sh t0,0(t1)
+		li t0,0xff
+		sb t0,0(t1)
 		
 		j REC_INPUT_END
 
