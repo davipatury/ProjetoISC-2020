@@ -52,7 +52,7 @@ M_LOOP:		call RECEIVE_INPUT
 		
 		addi t0,s1,-24
 		addi t1,s2,-24
-		render_a(background, t0, t1, 120, 100, s0, t0, t1)
+		render_a(background, t0, t1, 120, 96, s0, t0, t1)
 		
 		lb t0,CHAR_ATTACK
 		beq t0,zero,STATIC_CHAR
@@ -83,9 +83,9 @@ M_LOOP:		call RECEIVE_INPUT
 		
 		j FRAME_END
 
-#################################
-#	MID KICK MOVEMENT	#
-#################################
+#########################################
+#	MID KICK MOVEMENT		#
+#########################################
 MID_KICK:	la t1,CHAR_ATTACK
 		lbu t0,1(t1)		# current sprite
 		
@@ -188,9 +188,9 @@ BWD_SWEEP_4:	render_a(bwd_sweep_2, s1, s2, 76, 56, s0, zero, zero)
 		h_increment(CHAR_POS, 24, 0, t0, t1)
 		j ATTACK_ANIM_E
 
-#################################
-#	ROUNDHOUSE MOVEMENT	#
-#################################
+#########################################
+#	ROUNDHOUSE MOVEMENT		#
+#########################################
 ROUNDHOUSE:	la t1,CHAR_ATTACK
 		lbu t0,1(t1)		# current sprite
 		
@@ -302,9 +302,9 @@ FLYING_KICK_6:	h_increment(CHAR_POS, 16, 2, t0, t1)	# y += 16
 FLYING_KICK_7:	render_a(flying_kick_3, s1, s2, 48, 56, s0, zero, zero)
 		j ATTACK_ANIM_E
 
-#################################
-#	HIGH KICK MOVEMENT	#
-#################################
+#########################################
+#	HIGH KICK MOVEMENT		#
+#########################################
 HIGH_KICK:	la t1,CHAR_ATTACK
 		lbu t0,1(t1)		# current sprite
 		
@@ -385,15 +385,15 @@ ATTACK_END:	la t0,CHAR_ATTACK
 		sh zero,0(t0)
 		j STATIC_CHAR
 
-######################################
-#	NON-ATTACKING MOVEMENT	     #
-######################################
+#########################################
+#	NON-ATTACKING MOVEMENT		#
+#########################################
 STATIC_CHAR:	render_a(char_torso, s1, s2, 48, 32, s0, zero, zero)
 		addi s2,s2,32
 
-#################################
-#	WALKING ANIMATION	#
-#################################
+#########################################
+#	WALKING ANIMATION		#
+#########################################
 		lb t0,CHAR_WALKING	# direction
 		beqz t0,WALK_IDLE	# if not moving (direction == 0) draw idle sprite
 		
@@ -434,7 +434,7 @@ WALK_REV_CONT:	li t1,48
 
 WALK_IDLE:	render_a(char_legs_idle, s1, s2, 48, 24, s0, zero, zero)
 
-##########################
+#########################
 
 FRAME_END:	toggle_frame()
 		j M_LOOP
