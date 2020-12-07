@@ -1,7 +1,7 @@
 #################################################################
 #	Desenhar imagem						#
 #								#
-# a0 = endereço inicial da imagem (excluindo o tamanho)		#
+# a0 = endereço inicial da imagem 				#
 # a1 = x inicial NA FRAME					#
 # a2 = y inicial NA FRAME					#
 # a3 = largura da area de desenho				#
@@ -68,6 +68,12 @@ li t1,0xFF200604
 sw t0,0(t0)
 .end_macro
 
+.macro background_offset(%r, %r1)
+lb %r,CURRENT_MAP
+li %r1,240
+mul %r,%r,%r1
+.end_macro
+
 # CHAR CONTROL
 .macro load_pos(%label, %x, %y)
 la %y,%label
@@ -95,10 +101,18 @@ j REC_INPUT_CLN
 .end_macro
 
 # MEMORY
+
+# BYTE
 .macro b_increment(%label, %value, %imm, %r, %r1)
 la %r1,%label
 lb %r,%imm(%r1)
 addi %r,%r,%value
+sb %r,%imm(%r1)
+.end_macro
+
+.macro b_increment_ar(%r1, %value, %imm, %r)
+lb %r,%imm(%r1)
+add %r,%r,%value
 sb %r,%imm(%r1)
 .end_macro
 
@@ -109,10 +123,25 @@ addi %r,%r,-%value
 sb %r,%imm(%r1)
 .end_macro
 
+.macro b_decrement_ar(%r1, %value, %imm, %r)
+li %r,-1
+mul %value,%value,%r
+lb %r,%imm(%r1)
+add %r,%r,%value
+sb %r,%imm(%r1)
+.end_macro
+
+# HALF WORD
 .macro h_increment(%label, %value, %imm, %r, %r1)
 la %r1,%label
 lh %r,%imm(%r1)
 addi %r,%r,%value
+sh %r,%imm(%r1)
+.end_macro
+
+.macro h_increment_ar(%r1, %value, %imm, %r)
+lh %r,%imm(%r1)
+add %r,%r,%value
 sh %r,%imm(%r1)
 .end_macro
 
@@ -121,4 +150,17 @@ la %r1,%label
 lh %r,%imm(%r1)
 addi %r,%r,-%value
 sh %r,%imm(%r1)
+.end_macro
+
+.macro h_decrement_ar(%r1, %value, %imm, %r)
+li %r,-1
+mul %value,%value,%r
+lh %r,%imm(%r1)
+add %r,%r,%value
+sh %r,%imm(%r1)
+.end_macro
+
+.macro apply_multiplier(%imm, %r, %mul)
+li %r,%imm
+mul %r,%r,%mul
 .end_macro

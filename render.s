@@ -1,7 +1,7 @@
 #################################################################
 #	Desenhar imagem						#
 #								#
-# a0 = endereço inicial da imagem (excluindo o tamanho)		#
+# a0 = endereço inicial da imagem				#
 # a1 = x inicial NA FRAME					#
 # a2 = y inicial NA FRAME					#
 # a3 = largura da area de desenho				#
