@@ -407,10 +407,7 @@ STATIC_CHAR:	render_a(char_torso, s1, s2, 48, 32, s0, zero, zero)
 		sb zero,1(t1)		# else restart animation counter
 		j WALK_IDLE		# draw idle sprite
 
-WALK_CONT:	li a7,1
-		mv a0,t0
-		ecall
-		li t1,48
+WALK_CONT:	li t1,48
 		mul t1,t1,t0		# curr sprite * 48 = x in spritesheet
 		render_a(walking_1, s1, s2, 48, 24, s0, t1, zero)
 		b_increment(CHAR_WALKING, 1, 1, t0, t1)
