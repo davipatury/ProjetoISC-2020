@@ -36,8 +36,6 @@ jal RENDER
 .end_macro
 
 # FRAME CONTROL
-.eqv FRAME_CTRL_ADDR 0xFF200604
-
 .macro current_frame(%r)
 li %r,0xFF200604
 lw %r,0(%r)
@@ -54,9 +52,9 @@ li t0,0xFF200604
 lw t1,0(t0)
 xori t1,t1,0x001
 sw t1,0(t0)
-li a0,50
-li a7,32
-ecall	
+#li a0,50
+#li a7,32
+#ecall	
 .end_macro
 
 .macro reset_frame()
@@ -71,10 +69,15 @@ sw t0,0(t0)
 .end_macro
 
 # CHAR CONTROL
-.macro load_char_pos(%x, %y)
-la %y,CHAR_POS
+.macro load_pos(%label, %x, %y)
+la %y,%label
 lh %x,0(%y)
 lh %y,2(%y)
+.end_macro
+
+.macro load_pos_r(%r, %x, %y)
+lh %x,0(%r)
+lh %y,2(%r)
 .end_macro
 
 .macro check_key(%n, %label, %r, %r1)
@@ -82,10 +85,10 @@ li %r1,%n
 beq %r,%r1,%label
 .end_macro
 
-.macro register_attack(%n)
-lb t0,CHAR_ATTACK
+.macro register_p1_attack(%n)
+lb t0,P1_ATTACK
 bnez t0,REC_INPUT_CLN
-la t0,CHAR_ATTACK
+la t0,P1_ATTACK
 li t1,%n
 sb t1,0(t0)
 j REC_INPUT_CLN
