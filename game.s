@@ -21,13 +21,15 @@ CHAR_WALKING: .byte 0, 0	# direction, curr sprite
 # 8: HIGH KICK			#
 #################################
 # NON FIRE BUTTON ATTACKS	#
-#				#
+# 9: JAB			#
+# 10: CROUCH BLOCK		#
+# 14: HIGH PUNCH		#
 #################################
 CHAR_ATTACK: .byte 0, 0
 
 .text
 
-SPLASH:		reset_frame
+SPLASH:		reset_frame()
 		render(splash, 0, 0, 320, 240, zero, 0, 0)
 
 SPLASH_LOOP:	li t1,0xFF200000
@@ -72,6 +74,13 @@ M_LOOP:		call RECEIVE_INPUT
 		li t1,8
 		beq t0,t1,HIGH_KICK
 		
+		li t1,9
+		beq t0,t1,JAB
+		li t1,10
+		beq t0,t1,CROUCH_BLOCK
+		li t1,14
+		beq t0,t1,HIGH_PUNCH
+		
 		j FRAME_END
 
 #################################
@@ -109,9 +118,9 @@ SJ_KICK:	la t1,CHAR_ATTACK
 		lbu t0,1(t1)		# current sprite
 		
 		beqz t0,SJ_KICK_0
-		li t1,5
+		li t1,3
 		ble t0,t1,SJ_KICK_1
-		li t1,6
+		li t1,4
 		beq t0,t1,SJ_KICK_0
 		j ATTACK_END
 		
@@ -282,8 +291,7 @@ FLYING_KICK_3:	h_increment(CHAR_POS, 8, 0, t0, t1)	# x += 8
 		j ATTACK_ANIM_E
 FLYING_KICK_4:	render_a(flying_kick_2, s1, s2, 64, 56, s0, zero, zero)
 		j ATTACK_ANIM_E
-FLYING_KICK_5:	h_decrement(CHAR_POS, 8, 0, t0, t1)	# x -= 8
-		h_increment(CHAR_POS, 8, 2, t0, t1)	# y += 8
+FLYING_KICK_5:	h_increment(CHAR_POS, 8, 2, t0, t1)	# y += 8
 		load_char_pos(s1, s2)
 		render_a(flying_kick_2, s1, s2, 64, 56, s0, zero, zero)
 		j ATTACK_ANIM_E
@@ -316,6 +324,55 @@ HIGH_KICK_0:	render_a(kick, s1, s2, 48, 56, s0, zero, zero)
 HIGH_KICK_1:	render_a(high_kick_1, s1, s2, 56, 56, s0, zero, zero)
 		j ATTACK_ANIM_E
 HIGH_KICK_2:	render_a(high_kick_2, s1, s2, 68, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+
+#########################################
+#		JAB MOVEMENT		#
+#########################################
+JAB:		la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
+		
+		beqz t0,JAB_0
+		li t1,2
+		ble t0,t1,JAB_1
+		li t1,3
+		beq t0,t1,JAB_0
+		j ATTACK_END
+		
+JAB_0:		render_a(punch, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+JAB_1:		render_a(jab, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+
+#########################################
+#	CROUCH BLOCK MOVEMENT		#
+#########################################
+CROUCH_BLOCK:	la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
+		
+		li t1,3
+		ble t0,t1,CROUCH_BLOCK_0
+		j ATTACK_END
+		
+CROUCH_BLOCK_0:	render_a(crouch_block, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+
+#########################################
+#	HIGH PUNCH MOVEMENT		#
+#########################################
+HIGH_PUNCH:	la t1,CHAR_ATTACK
+		lbu t0,1(t1)		# current sprite
+		
+		beqz t0,HIGH_PUNCH_0
+		li t1,2
+		ble t0,t1,HIGH_PUNCH_1
+		li t1,3
+		beq t0,t1,HIGH_PUNCH_0
+		j ATTACK_END
+		
+HIGH_PUNCH_0:	render_a(punch, s1, s2, 48, 56, s0, zero, zero)
+		j ATTACK_ANIM_E
+HIGH_PUNCH_1:	render_a(high_punch, s1, s2, 48, 56, s0, zero, zero)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -371,7 +428,8 @@ WALK_REV_CONT:	li t1,48
 
 WALK_IDLE:	render_a(char_legs_idle, s1, s2, 48, 24, s0, zero, zero)
 
-##############################
+##########################
+
 FRAME_END:	toggle_frame()
 		j M_LOOP
 
@@ -388,7 +446,10 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		lw t0,4(t1)
 
   		check_key('d', RI_MOVE_RIGHT, t0, t1)
+  		check_key('c', RI_JAB, t0, t1)
+  		check_key('x', RI_CROUCH_BLK, t0, t1)
   		check_key('a', RI_MOVE_LEFT, t0, t1)
+  		check_key('e', RI_HIGH_PUNCH, t0, t1)
  
  		# Fire movements
   		check_key('D', RI_MID_KICK, t0, t1)
@@ -441,6 +502,13 @@ RI_FLYING_KICK:	register_attack(7)
 # High kick		(press E, shift + e)
 RI_HIGH_KICK:	register_attack(8)
 
+# Jab			(press c)
+RI_JAB:		register_attack(9)
+# Crouch block		(press x)
+RI_CROUCH_BLK:	register_attack(10)
+# High punch		(press e)
+RI_HIGH_PUNCH:	register_attack(14)
+
 REC_INPUT_END:	ret	# retorna
 
 .align 2
@@ -458,6 +526,7 @@ REC_INPUT_END:	ret	# retorna
 
 .include "sprites/generic/crouch_block.data"
 .include "sprites/generic/kick.data"
+.include "sprites/generic/punch.data"
 
 .include "sprites/mid_kick/mid_kick_1.data"
 .include "sprites/mid_kick/mid_kick_2.data"
@@ -486,6 +555,10 @@ REC_INPUT_END:	ret	# retorna
 
 .include "sprites/high_kick/high_kick_1.data"
 .include "sprites/high_kick/high_kick_2.data"
+
+.include "sprites/jab/jab.data"
+
+.include "sprites/high_punch/high_punch.data"
 
 .text
 .include "render.s"
