@@ -1,15 +1,15 @@
+######################## DESENHAR IMAGEM ########################
+#	a0 = endereço inicial da imagem				#
+#	a1 = x inicial NA FRAME					#
+#	a2 = y inicial NA FRAME					#
+#	a3 = largura da area de desenho				#
+#	a4 = altura da area de desenho				#
+#	a5 = frame (0 ou 1)					#
+#	a6 = x0 inicial NA IMAGEM				#
+#	a7 = y0 inicial NA IMAGEM				#
 #################################################################
-#	Desenhar imagem						#
-#								#
-# a0 = endereço inicial da imagem				#
-# a1 = x inicial NA FRAME					#
-# a2 = y inicial NA FRAME					#
-# a3 = largura da area de desenho				#
-# a4 = altura da area de desenho				#
-# a5 = frame (0 ou 1)						#
-# a6 = x0 inicial NA IMAGEM					#
-# a7 = y0 inicial NA IMAGEM					#
-# Usa de t0 ate t4						#
+#	Usa os registradores de a0 a a7				#
+#	Usa os registradores de t0 a t4				#
 #################################################################
 .text
 RENDER:		li t0,0xFF0	# t0 = 0xFF0
