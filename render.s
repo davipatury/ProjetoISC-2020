@@ -75,3 +75,4 @@ RENDER_L_CONT:	j RENDER_LOOP
 
 # Render Loop Exit
 RENDER_L_EXIT:	ret		# return
+RENDER_NOP:	nop

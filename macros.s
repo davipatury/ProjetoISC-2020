@@ -1,3 +1,30 @@
+.macro apply_multiplier(%imm, %r, %mul)
+li %r,%imm
+mul %r,%r,%mul
+.end_macro
+
+.macro push_clear(%off)
+la t0,FRAME_CLR
+addi t0,t0,%off
+lw t1,0(t0)
+lw t2,4(t0)
+sw t1,8(t0)
+sw t2,12(t0)
+.end_macro
+
+.macro update_clear(%x, %y, %w, %h)
+push_clear(16)
+push_clear(8)
+push_clear(0)
+la t0,FRAME_CLR
+sh %x,0(t0)
+sh %y,2(t0)
+li t1,%w
+sh t1,4(t0)
+li t1,%h
+sh t1,6(t0)
+.end_macro
+
 #################################################################
 #	Desenhar imagem						#
 #								#
@@ -11,24 +38,37 @@
 # a7 = y inicial NA IMAGEM					#
 #								#
 #################################################################
-.macro render(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereço da imagem
-li a1,%x	# x
-li a2,%y	# y
-li a3,%w	# width
-li a4,%h	# height
-mv a5,%f	# frame (0 ou 1)
-li a6,%x0	# x0
-li a7,%y0	# y0
-jal RENDER
-.end_macro
-
 .macro render_a(%adr, %x, %y, %w, %h, %f, %x0, %y0)
+update_clear(%x, %y, %w, %h)
 la a0,%adr	# endereço da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 li a3,%w	# width
 li a4,%h	# height
+mv a5,%f	# frame (0 ou 1)
+mv a6,%x0	# x0
+mv a7,%y0	# y0
+jal RENDER
+.end_macro
+
+.macro render_ab(%adr, %x, %y, %w, %h, %f, %x0, %y0)
+la a0,%adr	# endereço da imagem
+mv a1,%x	# x
+mv a2,%y	# y
+li a3,%w	# width
+li a4,%h	# height
+mv a5,%f	# frame (0 ou 1)
+mv a6,%x0	# x0
+mv a7,%y0	# y0
+jal RENDER
+.end_macro
+
+.macro render_b(%adr, %x, %y, %w, %h, %f, %x0, %y0)
+la a0,%adr	# endereço da imagem
+mv a1,%x	# x
+mv a2,%y	# y
+mv a3,%w	# width
+mv a4,%h	# height
 mv a5,%f	# frame (0 ou 1)
 mv a6,%x0	# x0
 mv a7,%y0	# y0
@@ -60,12 +100,6 @@ sw t1,0(t0)
 .macro reset_frame()
 li t0,0xFF200604
 sw zero,0(t0)
-.end_macro
-
-.macro set_frame(%v)
-li t0,%v
-li t1,0xFF200604
-sw t0,0(t0)
 .end_macro
 
 .macro background_offset(%r, %r1)
@@ -103,23 +137,9 @@ j REC_INPUT_CLN
 # MEMORY
 
 # BYTE
-.macro b_increment(%label, %value, %imm, %r, %r1)
-la %r1,%label
-lb %r,%imm(%r1)
-addi %r,%r,%value
-sb %r,%imm(%r1)
-.end_macro
-
 .macro b_increment_ar(%r1, %value, %imm, %r)
 lb %r,%imm(%r1)
 add %r,%r,%value
-sb %r,%imm(%r1)
-.end_macro
-
-.macro b_decrement(%label, %value, %imm, %r, %r1)
-la %r1,%label
-lb %r,%imm(%r1)
-addi %r,%r,-%value
 sb %r,%imm(%r1)
 .end_macro
 
@@ -160,7 +180,17 @@ add %r,%r,%value
 sh %r,%imm(%r1)
 .end_macro
 
-.macro apply_multiplier(%imm, %r, %mul)
-li %r,%imm
-mul %r,%r,%mul
+.macro print_int(%r)
+mv a0,%r
+li a7,1
+ecall
+li a0,' '
+li a7,11
+ecall
+.end_macro
+
+.macro print_nl()
+li a0,10
+li a7,11
+ecall
 .end_macro
