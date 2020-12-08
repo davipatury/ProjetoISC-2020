@@ -44,15 +44,6 @@ CURRENT_MAP:	.byte 1
 SPLASH_SEL:	.byte 0
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
 
-#FRAME_CLR:	.half 0, 0	# 0, 2
-#		.byte 0, 0	# 4, 5
-#		.half 0, 0	# 6, 8
-#		.byte 0, 0	# 10, 11
-#		.half 0, 0	# 12, 14
-#		.byte 0, 0	# 16, 17
-#		.half 0, 0	# 18, 20
-#		.byte 0, 0	# 22, 23
-
 FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 
 .text
@@ -108,23 +99,6 @@ GAME:		background_offset(s0, t0)
 		li t0,1
 		render_ab(backgrounds, zero, zero, 320, 240, t0, zero, s0)
 		j GAME_LOOP
-		#la t0,P1_ATTACK
-		#li t1,8
-		#sb t1,0(t0)
-
-GAMECONTROL:	li t1,0xFF200000
-		lw t0,0(t1)
-		andi t0,t0,0x0001
-  	 	beq t0,zero,GAMECONTROL
-
-  		lw t0,4(t1) 
-  		li t1,'n'
-  		beq t0,t1,GAME_LOOP
-
-  		j GAMECONTROL
- 
-		li a7,10
-		ecall
 
 GAME_LOOP:	call RECEIVE_INPUT
 		#call MUSIC
@@ -784,6 +758,9 @@ RI_JUMP:	register_p1_attack(13)
 RI_HIGH_PUNCH:	register_p1_attack(14)
 
 REC_INPUT_END:	ret	# retorna
+
+EXIT:		li a7,10
+		ecall
 
 .align 2
 .data
