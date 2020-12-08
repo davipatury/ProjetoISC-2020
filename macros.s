@@ -9,6 +9,27 @@ mul %r,%r,%mul
 .end_macro
 
 #########################################################
+#	DEBUG: Imprime um inteiro armazenado em %r.	#
+#########################################################
+.macro print_int(%r)
+mv a0,%r
+li a7,1
+ecall
+li a0,' '
+li a7,11
+ecall
+.end_macro
+
+#########################################################
+#	DEBUG: Imprime uma nova linha.			#
+#########################################################
+.macro print_nl()
+li a0,10
+li a7,11
+ecall
+.end_macro
+
+#########################################################
 #	"Empurra" 2 words no offset %off para "baixo"	#
 #########################################################
 .macro push_clear(%off)
@@ -129,6 +150,30 @@ mul %r,%r,%r1
 .end_macro
 
 #########################################################
+#	Incrementa o valor do registrador $r1 * %mul	#
+#	a posição do endereço %pos + %imm utilizando	#
+#	%r2 e %r3 como suporte, sendo %mw a largura	#
+#	máxima que o sprite pode alcançar.		#
+#########################################################
+.macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3)
+	lh %r2,%imm(%pos)
+	mul %r3,%r1,%mul
+	add %r2,%r2,%r3
+
+	li %r3,320
+	addi %r3,%r3,-%mw
+	
+	print_int(%r2)
+	print_int(%r3)
+	
+	blez %r2,ZERO
+	ble %r2,%r3,SAVE
+	mv %r2,%r3
+	j SAVE
+ZERO:	mv %r2,zero
+SAVE:	sh %r2,%imm(%pos)
+.end_macro
+#########################################################
 #	Armazena a posição armazenada em %label		#
 #	nos registradores %x e %y.			#
 #########################################################
@@ -157,18 +202,18 @@ beq %r,%r1,%label
 .end_macro
 
 #########################################################
-#	Registra um ataque %n do player 1.		#
+#	Registra um ataque %n do Player %address	#
+#	e pula para %label.
 #							#
 #	Para mais informações veja ATTACK TABLE		#
 #	em game.s					#
 #########################################################
-.macro register_p1_attack(%n)
-lb t0,P1_ATTACK
-bnez t0,REC_INPUT_CLN
-la t0,P1_ATTACK
-li t1,%n
-sb t1,0(t0)
-j REC_INPUT_CLN
+.macro register_attack(%address, %n, %label)
+	lb t1,0(%address)
+	bnez t1,END
+	li t1,%n
+	sb t1,0(%address)
+END:	j %label
 .end_macro
 
 #########################################################
@@ -194,17 +239,6 @@ sb %r,%imm(%r1)
 .end_macro
 
 #########################################################
-#	Incrementa %value a HALFWORD na label		#
-#	%label + %imm usando $r como auxiliar.		#
-#########################################################
-.macro h_increment(%label, %value, %imm, %r, %r1)
-la %r1,%label
-lh %r,%imm(%r1)
-addi %r,%r,%value
-sh %r,%imm(%r1)
-.end_macro
-
-#########################################################
 #	Incrementa %value a HALFWORD no endereço	#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
@@ -212,48 +246,4 @@ sh %r,%imm(%r1)
 lh %r,%imm(%r1)
 add %r,%r,%value
 sh %r,%imm(%r1)
-.end_macro
-
-#########################################################
-#	Decrementa %value da HALFWORD na label		#
-#	%label + %imm usando $r como auxiliar.		#
-#########################################################
-.macro h_decrement(%label, %value, %imm, %r, %r1)
-la %r1,%label
-lh %r,%imm(%r1)
-addi %r,%r,-%value
-sh %r,%imm(%r1)
-.end_macro
-
-#########################################################
-#	Decrementa %value da HALFWORD no endereço	#
-#	%r1 + %imm usando $r como auxiliar.		#
-#########################################################
-.macro h_decrement_ar(%r1, %value, %imm, %r)
-li %r,-1
-mul %value,%value,%r
-lh %r,%imm(%r1)
-add %r,%r,%value
-sh %r,%imm(%r1)
-.end_macro
-
-#########################################################
-#	DEBUG: Imprime um inteiro armazenado em %r.	#
-#########################################################
-.macro print_int(%r)
-mv a0,%r
-li a7,1
-ecall
-li a0,' '
-li a7,11
-ecall
-.end_macro
-
-#########################################################
-#	DEBUG: Imprime uma nova linha.			#
-#########################################################
-.macro print_nl()
-li a0,10
-li a7,11
-ecall
 .end_macro

@@ -2,9 +2,6 @@
 
 .align 2
 .data
-P1_POS:		.half 32, 168		# top left x, y
-P2_POS:		.half 240, 168
-
 #################################
 # 	  ATTACK TABLE		#
 #################################
@@ -28,9 +25,11 @@ P2_POS:		.half 240, 168
 #################################
 P1_ATTACK:	.byte 0, 0		# attack, curr sprite
 P1_WALKING:	.byte 0, 0		# direction, curr sprite
+P1_POS:		.half 32, 168		# top left x, y
 
 P2_ATTACK:	.byte 0, 0
 P2_WALKING:	.byte 0, 0
+P2_POS:		.half 240, 168
 
 #################################
 #	    MAP TABLE		#
@@ -54,12 +53,6 @@ FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 .text
 SPLASH:		reset_frame()
 		render_s(splash, zero, zero, 320, 240, zero, zero, zero)
-		
-		la t0,RECEIVE_INPUT
-		la t1,RI_HIGH_PUNCH
-		sub a0,t0,t1
-		li a7,1
-		ecall
 
 SPLASH_RENDER:	lb s0,SPLASH_SEL
 		li s1,32
@@ -315,16 +308,16 @@ BWD_SWEEP_0:	render(crouch_block, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_1:	render(bwd_sweep_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BWD_SWEEP_2:	apply_multiplier(24, t1, s5)
-		h_decrement_ar(s3, t1, 0, t0)
+BWD_SWEEP_2:	li t0,-24
+		increment_pos_x(s3, t0, 0, s5, 76, t1, t2)
 		load_pos_r(s3, s1, s2)
 		render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_3:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_4:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
-		apply_multiplier(24, t1, s5)
-		h_increment_ar(s3, t1, 0, t0)
+		li t0,24
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -378,16 +371,16 @@ HIGH_BK_KICK:	lbu t0,1(s6)
 		
 HIGH_BK_KICK_0:	render(high_bk_kick_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-HIGH_BK_KICK_1:	apply_multiplier(16, t1, s5)
-		h_decrement_ar(s3, t1, 0, t0)
+HIGH_BK_KICK_1:	li t0,-16
+		increment_pos_x(s3, t0, 0, s5, 72, t1, t2)
 		load_pos_r(s3, s1, s2)
 		render(high_bk_kick_2, s1, s2, 56, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 HIGH_BK_KICK_2:	render(high_bk_kick_3, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 HIGH_BK_KICK_3:	render(high_bk_kick_2, s1, s2, 56, 56, s0, zero, s4)
-		apply_multiplier(16, t1, s5)
-		h_increment_ar(s3, t1, 0, t0)
+		li t0,16
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -415,26 +408,26 @@ FLYING_KICK_0:	render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FLYING_KICK_1:	render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FLYING_KICK_2:	apply_multiplier(8, t1, s5)
-		h_decrement_ar(s3, t1, 2, t0)		# y -= 8
+FLYING_KICK_2:	li t1,-8
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		load_pos_r(s3, s1, s2)
 		render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FLYING_KICK_3:	apply_multiplier(8, t1, s5)
-		h_increment_ar(s3, t1, 0, t0)		# x += 8
-		apply_multiplier(16, t1, s5)
-		h_decrement_ar(s3, t1, 2, t0)		# y -= 16	
+FLYING_KICK_3:	li t0,8
+		increment_pos_x(s3, t0, 0, s5, 64, t1, t2)	# x += 8
+		li t1,-16
+		h_increment_ar(s3, t1, 2, t0)		# y -= 16	
 		load_pos_r(s3, s1, s2)
 		render(flying_kick_1, s1, s2, 64, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FLYING_KICK_4:	render(flying_kick_1, s1, s2, 64, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FLYING_KICK_5:	apply_multiplier(8, t1, s5)
+FLYING_KICK_5:	li t1,8
 		h_increment_ar(s3, t1, 2, t0)		# y += 8	
 		load_pos_r(s3, s1, s2)
 		render(flying_kick_1, s1, s2, 64, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FLYING_KICK_6:	apply_multiplier(16, t1, s5)
+FLYING_KICK_6:	li t1,16
 		h_increment_ar(s3, t1, 2, t0)		# y += 16	
 		load_pos_r(s3, s1, s2)
 		render(jump, s1, s2, 48, 56, s0, zero, s4)
@@ -514,14 +507,14 @@ JUMP_0:		render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 JUMP_1:		render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-JUMP_2:		apply_multiplier(8, t1, s5)
-		h_decrement_ar(s3, t1, 2, t0)		# y -= 8
+JUMP_2:		li t1,-8
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		load_pos_r(s3, s1, s2)
 		render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 JUMP_3:		render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-JUMP_4:		apply_multiplier(8, t1, s5)
+JUMP_4:		li t1,8
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
 		load_pos_r(s3, s1, s2)
 		render(jump, s1, s2, 48, 56, s0, zero, s4)
@@ -551,71 +544,149 @@ HIGH_PUNCH_1:	render(high_punch, s1, s2, 48, 56, s0, zero, s4)
 #########################################
 BSOMERSAULT:	lbu t0,1(s6)
 		
+		# 72px
 		beqz t0,BSOMERSAULT_0
 		li t1,1
 		beq t0,t1,BSOMERSAULT_1
 		li t1,2
 		beq t0,t1,BSOMERSAULT_2
-		li t1,7
-		blt t0,t1,BSOMERSAULT_3
+		li t1,3
+		beq t0,t1,BSOMERSAULT_3
+		li t1,4
 		beq t0,t1,BSOMERSAULT_4
-		li t1,8
+		li t1,5
 		beq t0,t1,BSOMERSAULT_5
+		li t1,6
+		beq t0,t1,BSOMERSAULT_6
+		li t1,7
+		beq t0,t1,BSOMERSAULT_7
+		li t1,8
+		beq t0,t1,BSOMERSAULT_8
+		li t1,9
+		beq t0,t1,BSOMERSAULT_9
 		j ATTACK_END
 		
 BSOMERSAULT_0:	render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BSOMERSAULT_1:	render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-BSOMERSAULT_2:	apply_multiplier(8, t1, s5)
-		h_decrement_ar(s3, t1, 2, t0)		# y -= 8
+BSOMERSAULT_1:	li t1,-8
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BSOMERSAULT_3:	render(jump, s1, s2, 48, 56, s0, zero, s4)
+BSOMERSAULT_2:	li t1,-12
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
+		li t0,-20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		load_pos_r(s3, s1, s2)
+		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BSOMERSAULT_4:	apply_multiplier(8, t1, s5)
+BSOMERSAULT_3:	render(ss_left, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BSOMERSAULT_4:	render(ss_upside, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BSOMERSAULT_5:	li t0,-20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		load_pos_r(s3, s1, s2)
+		render(ss_right, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BSOMERSAULT_6:	li t0,-20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		load_pos_r(s3, s1, s2)
+		render(ss_right, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BSOMERSAULT_7:	li t1,12
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
+		li t0,-12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
 		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BSOMERSAULT_5:	render(landing, s1, s2, 48, 56, s0, zero, s4)
+BSOMERSAULT_8:	li t1,8
+		h_increment_ar(s3, t1, 2, t0)		# y += 8
+		li t0,-12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
+		load_pos_r(s3, s1, s2)
+		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BSOMERSAULT_9:	li t0,-12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
+		load_pos_r(s3, s1, s2)
+		render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
-#	FSOMERSAULT MOVEMENT		#
+#	BSOMERSAULT MOVEMENT		#
 #########################################
 FSOMERSAULT:	lbu t0,1(s6)
 		
+		# 72px
 		beqz t0,FSOMERSAULT_0
 		li t1,1
 		beq t0,t1,FSOMERSAULT_1
 		li t1,2
 		beq t0,t1,FSOMERSAULT_2
-		li t1,7
-		blt t0,t1,FSOMERSAULT_3
+		li t1,3
+		beq t0,t1,FSOMERSAULT_3
+		li t1,4
 		beq t0,t1,FSOMERSAULT_4
-		li t1,8
+		li t1,5
 		beq t0,t1,FSOMERSAULT_5
+		li t1,6
+		beq t0,t1,FSOMERSAULT_6
+		li t1,7
+		beq t0,t1,FSOMERSAULT_7
+		li t1,8
+		beq t0,t1,FSOMERSAULT_8
+		li t1,9
+		beq t0,t1,FSOMERSAULT_9
 		j ATTACK_END
 		
 FSOMERSAULT_0:	render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FSOMERSAULT_1:	render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-FSOMERSAULT_2:	apply_multiplier(8, t1, s5)
-		h_decrement_ar(s3, t1, 2, t0)		# y -= 8
+FSOMERSAULT_1:	li t1,-8
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FSOMERSAULT_3:	render(jump, s1, s2, 48, 56, s0, zero, s4)
+FSOMERSAULT_2:	li t1,-12
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
+		li t0,20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		load_pos_r(s3, s1, s2)
+		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FSOMERSAULT_4:	apply_multiplier(8, t1, s5)
+FSOMERSAULT_3:	render(ss_right, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FSOMERSAULT_4:	render(ss_right, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FSOMERSAULT_5:	li t0,20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		load_pos_r(s3, s1, s2)
+		render(ss_upside, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FSOMERSAULT_6:	li t0,20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		load_pos_r(s3, s1, s2)
+		render(ss_left, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FSOMERSAULT_7:	li t1,12
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
+		li t0,12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
 		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FSOMERSAULT_5:	render(landing, s1, s2, 48, 56, s0, zero, s4)
+FSOMERSAULT_8:	li t1,8
+		h_increment_ar(s3, t1, 2, t0)		# y += 8
+		li t0,12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
+		load_pos_r(s3, s1, s2)
+		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FSOMERSAULT_9:	li t0,12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
+		load_pos_r(s3, s1, s2)
+		render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -713,11 +784,12 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		lw t0,4(t1)
 
 		# P1
-  		check_key('d', RI_P1_MV_RIGHT, t0, t1)
+		la s0,P1_ATTACK
+  		check_key('d', RI_MV_RIGHT, t0, t1)
   		check_key('c', RI_JAB, t0, t1)
   		check_key('x', RI_CROUCH_BLK, t0, t1)
   		check_key('z', RI_BSOMERSAULT, t0, t1)
-  		check_key('a', RI_P1_MV_LEFT, t0, t1)
+  		check_key('a', RI_MV_LEFT, t0, t1)
   		check_key('q', RI_FSOMERSAULT, t0, t1)
   		check_key('w', RI_JUMP, t0, t1)
   		check_key('e', RI_HIGH_PUNCH, t0, t1)
@@ -732,60 +804,92 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		check_key('W', RI_FLYING_KICK, t0, t1)
   		check_key('E', RI_HIGH_KICK, t0, t1)
   		
-REC_INPUT_CLN:	la t1,P1_WALKING
-  		sh zero,0(t1)
+  		lb t1,GAMEMODE
+  		beqz t1,REC_INPUT_CLN
+  		
+  		# P2
+  		la s0,P2_ATTACK
+  		check_key('k', RI_MV_RIGHT, t0, t1)
+  		check_key('m', RI_JAB, t0, t1)
+  		check_key('n', RI_CROUCH_BLK, t0, t1)
+  		check_key('b', RI_BSOMERSAULT, t0, t1)
+  		check_key('h', RI_MV_LEFT, t0, t1)
+  		check_key('y', RI_FSOMERSAULT, t0, t1)
+  		check_key('u', RI_JUMP, t0, t1)
+  		check_key('i', RI_HIGH_PUNCH, t0, t1)
+ 
+ 		# Fire movements
+  		check_key('K', RI_MID_KICK, t0, t1)
+  		check_key('M', RI_SJ_KICK, t0, t1)
+  		check_key('N', RI_FWD_SWEEP, t0, t1)
+  		check_key('B', RI_BWD_SWEEP, t0, t1)
+  		check_key('H', RI_ROUNDHOUSE, t0, t1)
+  		check_key('Y', RI_HIGH_B_KICK, t0, t1)
+  		check_key('U', RI_FLYING_KICK, t0, t1)
+  		check_key('I', RI_HIGH_KICK, t0, t1)
+  		
+REC_INPUT_CLN:	la t0,P1_ATTACK
+		sh zero,2(t0)
+
+		beqz t0,REC_INPUT_END
+		la t0,P2_ATTACK
+		sh zero,2(t0)
+
   		j REC_INPUT_END
 
 # Move right 		(press d)
-RI_P1_MV_RIGHT:	lb t0,P1_ATTACK
+RI_MV_RIGHT:	lb t0,0(s0)
 		bnez t0,REC_INPUT_CLN
-		h_increment(P1_POS, 4, 0, t0, t1)
 
-		la t1,P1_WALKING
 		li t0,1
-		sb t0,0(t1)
+		sb t0,2(s0)
+		li t0,4
+		li t1,1
+		increment_pos_x(s0, t0, 4, t1, 48, t2, t3)
 		
 		j REC_INPUT_END
 
 # Move left 		(press a)
-RI_P1_MV_LEFT:	lb t0,P1_ATTACK
+RI_MV_LEFT:	lb t0,0(s0)
 		bnez t0,REC_INPUT_CLN
-		h_decrement(P1_POS, 4, 0, t0, t1)
-		la t1,P1_WALKING
+
 		li t0,0xff
-		sb t0,0(t1)
+		sb t0,2(s0)
+		li t0,-4
+		li t1,1
+		increment_pos_x(s0, t0, 4, t1, 48, t2, t3)
 		
 		j REC_INPUT_END
 
 # Mid kick		(press D, shift + d)
-RI_MID_KICK:	register_p1_attack(1)
+RI_MID_KICK:	register_attack(s0, 1, REC_INPUT_CLN)
 # Short jab kick	(press C, shift + c)
-RI_SJ_KICK:	register_p1_attack(2)
+RI_SJ_KICK:	register_attack(s0, 2, REC_INPUT_CLN)
 # Forward sweep		(press X, shift + x)
-RI_FWD_SWEEP:	register_p1_attack(3)
+RI_FWD_SWEEP:	register_attack(s0, 3, REC_INPUT_CLN)
 # Backwards sweep	(press Z, shift + z)
-RI_BWD_SWEEP:	register_p1_attack(4)
+RI_BWD_SWEEP:	register_attack(s0, 4, REC_INPUT_CLN)
 # Roundhouse		(press A, shift + a)
-RI_ROUNDHOUSE:	register_p1_attack(5)
+RI_ROUNDHOUSE:	register_attack(s0, 5, REC_INPUT_CLN)
 # High back kick	(press Q, shift + q)
-RI_HIGH_B_KICK:	register_p1_attack(6)
+RI_HIGH_B_KICK:	register_attack(s0, 6, REC_INPUT_CLN)
 # Fling kick		(press W, shift + w)
-RI_FLYING_KICK:	register_p1_attack(7)
+RI_FLYING_KICK:	register_attack(s0, 7, REC_INPUT_CLN)
 # High kick		(press E, shift + e)
-RI_HIGH_KICK:	register_p1_attack(8)
+RI_HIGH_KICK:	register_attack(s0, 8, REC_INPUT_CLN)
 
 # Jab			(press c)
-RI_JAB:		register_p1_attack(9)
+RI_JAB:		register_attack(s0, 9, REC_INPUT_CLN)
 # Crouch block		(press x)
-RI_CROUCH_BLK:	register_p1_attack(10)
+RI_CROUCH_BLK:	register_attack(s0, 10, REC_INPUT_CLN)
 # Back somersault	(press z)
-RI_BSOMERSAULT:	register_p1_attack(11)
+RI_BSOMERSAULT:	register_attack(s0, 11, REC_INPUT_CLN)
 # Forward somersault	(press q)
-RI_FSOMERSAULT:	register_p1_attack(12)
+RI_FSOMERSAULT:	register_attack(s0, 12, REC_INPUT_CLN)
 # Jump			(press w)
-RI_JUMP:	register_p1_attack(13)
+RI_JUMP:	register_attack(s0, 13, REC_INPUT_CLN)
 # High punch		(press e)
-RI_HIGH_PUNCH:	register_p1_attack(14)
+RI_HIGH_PUNCH:	register_attack(s0, 14, REC_INPUT_CLN)
 
 REC_INPUT_END:	ret	# retorna
 
@@ -837,6 +941,12 @@ EXIT:		li a7,10
 .include "sprites/jab/jab.data"
 
 .include "sprites/high_punch/high_punch.data"
+
+.include "sprites/somersault/ss_landing.data"
+.include "sprites/somersault/ss_straight.data"
+.include "sprites/somersault/ss_upside.data"
+.include "sprites/somersault/ss_right.data"
+.include "sprites/somersault/ss_left.data"
 
 .text
 .include "render.s"
