@@ -174,63 +174,7 @@ GAME_LOOP:	call RECEIVE_INPUT
 		toggle_frame()
 		j GAME_LOOP
 
-#########################################
-#	NON-ATTACKING MOVEMENT		#
-#########################################
-STATIC_CHAR:	render_s(char_torso, s1, s2, 48, 32, s0, zero, s4)
-		addi s2,s2,32
-
-#########################################
-#	WALKING ANIMATION		#
-#########################################
-		lb t0,2(s6)			# direction
-		beqz t0,WALK_IDLE		# if not moving (direction == 0) draw idle sprite
-		
-		li t1,-1			# -1 = reverse
-		beq t0,t1,WALK_REV
-
-		lbu t0,3(s6)			# current sprite
-		li t2,3
-		blt t0,t2,WALK_CONT		# if curr sprite < 3 then continue animation
-		sb zero,3(s6)			# else restart animation counter
-		j WALK_IDLE			# draw idle sprite
-
-WALK_CONT:	li t1,48
-		mul t1,t1,t0			# curr sprite * 48 = x in spritesheet
-		render_s(walking_1, s1, s2, 48, 24, s0, t1, s4)
-		li t1,1
-		b_increment_ar(s6, t1, 3, t0)
-		addi s2,s2,-32
-		update_clear(s1, s2, 48, 56)
-		jr s9
-
-WALK_REV:	lbu t0,3(s6)			# current sprite
-		beqz t0,WALK_REV_SET
-		bgtz t0,WALK_REV_CONT		# if curr sprite > 0 then continue animation
-		li t2,3				# goto last sprite
-		sb t2,3(s6)			# else restart animation counter
-		j WALK_IDLE			# draw idle sprite
-
-WALK_REV_SET:	li t0,3
-		sb t0,3(s6)
-		j WALK_REV_CONT
-
-WALK_REV_CONT:	li t1,48
-		addi t0,t0,-1
-		mul t1,t1,t0			# curr sprite * 48 = x in spritesheet
-		render_s(walking_1, s1, s2, 48, 24, s0, t1, s4)
-		li t1,1
-		b_decrement_ar(s6, t1, 3, t0)
-		addi s2,s2,-32
-		update_clear(s1, s2, 48, 56)
-		jr s9
-
-WALK_IDLE:	render_s(char_legs_idle, s1, s2, 48, 24, s0, zero, s4)
-		addi s2,s2,-32
-		update_clear(s1, s2, 48, 56)
-		jr s9
-
-ATTACK:		beqz a0,STATIC_CHAR
+ATTACK:		beqz a0,A_STATIC_CHAR
 		li t1,1
 		beq a0,t1,A_MID_KICK
 		li t1,2
@@ -267,6 +211,7 @@ ATTACK:		beqz a0,STATIC_CHAR
 #	Nós tivemos que usar essa solução por que o alcance da instrução 'beq'		#
 #	é menor que da instrução 'jump' e isso estava limitando o desenvolvimento.	#
 #########################################################################################
+A_STATIC_CHAR:	j STATIC_CHAR
 A_MID_KICK: 	j MID_KICK
 A_SJ_KICK:	j SJ_KICK
 A_FWD_SWEEP:	j FWD_SWEEP
@@ -683,6 +628,81 @@ ATTACK_ANIM_E:	li t1,1
 ATTACK_END:	sh zero,0(s6)
 		j STATIC_CHAR
 
+#########################################
+#	NON-ATTACKING MOVEMENT		#
+#########################################
+STATIC_CHAR:	render_s(char_torso, s1, s2, 48, 32, s0, zero, s4)
+		addi s2,s2,32
+
+#########################################
+#	WALKING ANIMATION		#
+#########################################
+		lb t0,2(s6)			# direction
+		beqz t0,WALK_IDLE		# if not moving (direction == 0) draw idle sprite
+		
+		li t1,-1			# -1 = reverse
+		beq t0,t1,WALK_REV
+
+		lbu t0,3(s6)			# current sprite
+		
+		li t2,3
+		blt t0,t2,WALK_CONT		# if curr sprite < 3 then continue animation
+		beq t0,t2,WALK_TMODE
+		li t2,10
+		blt t0,t2,WALK_2_CONT
+
+		sb zero,3(s6)			# else restart animation counter
+		j WALK_IDLE			# draw idle sprite
+
+WALK_TMODE:	li t1,1
+		b_increment_ar(s6, t1, 3, t0)
+		j WALK_IDLE
+
+WALK_2_CONT:	addi t0,t0,-1
+WALK_CONT:	li t1,48
+		mul t1,t1,t0			# curr sprite * 48 = x in spritesheet
+		render_s(walking, s1, s2, 48, 24, s0, t1, s4)
+		li t1,1
+		b_increment_ar(s6, t1, 3, t0)
+		addi s2,s2,-32
+		j WALK_CLEAR
+
+WALK_REV:	lbu t0,3(s6)			# current sprite
+		beqz t0,WALK_REV_SET
+		li t1,1
+		beq t0,t1,WALK_REV_TMODE
+		li t1,5
+		blt t0,t1,WALK_REV_CONT		# if curr sprite > 0 then continue animation
+		bgt t0,t1,WALK_2REV_CONT
+
+		li t2,4				# goto last sprite
+		sb t2,3(s6)			# else restart animation counter
+		j WALK_IDLE			# draw idle sprite
+
+WALK_REV_SET:	li t0,4
+		sb t0,3(s6)
+		j WALK_REV_CONT
+
+WALK_REV_TMODE:	li t0,11
+		sb t0,3(s6)
+		j WALK_IDLE
+
+WALK_2REV_CONT:	addi t0,t0,-3
+WALK_REV_CONT:	li t1,48
+		addi t0,t0,-1
+		mul t1,t1,t0			# curr sprite * 48 = x in spritesheet
+		render_s(walking, s1, s2, 48, 24, s0, t1, s4)
+		li t1,1
+		b_decrement_ar(s6, t1, 3, t0)
+		addi s2,s2,-32
+		j WALK_CLEAR
+
+WALK_IDLE:	render_s(char_legs_idle, s1, s2, 48, 24, s0, zero, s4)
+		addi s2,s2,-32
+
+WALK_CLEAR:	update_clear(s1, s2, 48, 56)
+		jr s9
+
 #########################
 #	USER INPUT	#
 #########################
@@ -780,7 +800,7 @@ EXIT:		li a7,10
 
 .include "sprites/static_char/char_torso.data"
 .include "sprites/static_char/char_legs_idle.data"
-.include "sprites/static_char/walking_1.data"
+.include "sprites/static_char/walking.data"
 
 .include "sprites/generic/crouch_block.data"
 .include "sprites/generic/kick.data"
