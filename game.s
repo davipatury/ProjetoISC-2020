@@ -3,7 +3,7 @@
 .align 2
 .data
 #################################
-# 	  ATTACK TABLE		#
+# 	  STATE TABLE		#
 #################################
 # 0:  STATIC (non-attacking)	#
 ###### FIRE BUTTON ATTACKS ######
@@ -22,12 +22,16 @@
 # 12: FORWARD SOMERSAULT	#
 # 13: JUMP			#
 # 14: HIGH PUNCH		#
+########## MISC STATES ##########
+# 15: BOWING			#
+########## DEAD STATES ##########
+# 16: NORMAL DEATH		#
 #################################
-P1_ATTACK:	.byte 0, 0		# attack, curr sprite
+P1_STATE:	.byte 0, 0		# attack, curr sprite
 P1_WALKING:	.byte 0, 0		# direction, curr sprite
 P1_POS:		.half 32, 168		# top left x, y
 
-P2_ATTACK:	.byte 0, 0
+P2_STATE:	.byte 0, 0
 P2_WALKING:	.byte 0, 0
 P2_POS:		.half 240, 168
 
@@ -39,8 +43,7 @@ P2_POS:		.half 240, 168
 # 2:  BEACH			#
 # 3:  TEMPLE			#
 #################################
-CURRENT_MAP:	.byte 1
-SPLASH_SEL:	.byte 0
+CURRENT_MAP:	.byte 3
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
 
 #################################################################################
@@ -52,20 +55,26 @@ FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 
 .text
 SPLASH:		reset_frame()
+		li t0,1
+		render_s(splash, zero, zero, 320, 240, t0, zero, zero)
+		toggle_frame()
 		render_s(splash, zero, zero, 320, 240, zero, zero, zero)
 
-SPLASH_RENDER:	lb s0,SPLASH_SEL
+SPLASH_RENDER:	lb s0,GAMEMODE
 		li s1,32
 		li s2,80
+		next_frame(s3)
 		
 		mul t0,s1,s0
 		addi t0,t0,168
-		render_s(splash_selection, s2, t0, 160, 28, zero, zero, zero)
+		render_s(splash_selection, s2, t0, 160, 28, s3, zero, zero)
 		
 		xori s0,s0,1
 		mul t0,s1,s0
 		addi t0,t0,168
-		render_s(splash, s2, t0, 160, 28, zero, s2, t0)
+		render_s(splash, s2, t0, 160, 28, s3, s2, t0)
+		
+		toggle_frame()
 
 SPLASH_LOOP:	li t1,0xFF200000
 		lw t0,0(t1)
@@ -82,24 +91,52 @@ SPLASH_LOOP:	li t1,0xFF200000
 
   		j SPLASH_LOOP
 
-TOGGLE_SPLASH:	la t0,SPLASH_SEL
+TOGGLE_SPLASH:	la t0,GAMEMODE
 		lb t1,0(t0)
 		xori t1,t1,1
 		sb t1,0(t0)
 		j SPLASH_RENDER
 
-START_GAME:	lb t0,SPLASH_SEL
-		la t1,GAMEMODE
-		sb t0,0(t1)
+START_GAME:	#li a7,34
+		#la a0,P1_STATE
+		#lw a0,0(a0)
+		#ecall
 
-GAME:		background_offset(s0, t0)
-		render_s(backgrounds, zero, zero, 320, 240, zero, zero, s0)
+NEXT_ROUND:	reset_frame()	# Set frame to 0
+
+		# Set players state to (15 (bowing), 0, 0, 0)
+		li t0,0x0000000f
+		la t1,P1_STATE
+		sw t0,0(t1)
+		la t1,P2_STATE
+		sw t0,0(t1)
+		
+		# Reset players position
+		la t0,P1_POS
+		li t1,0x00a80020	# 32,	168
+		sw t1,0(t0)
+		la t0,P2_POS
+		li t1,0x00a800f0	# 240,	168
+		sw t1,0(t0)
+		
+		# Cycle background
+		la t0,CURRENT_MAP
+		lb t1,0(t0)
+		li t2,3
+		blt t1,t2,INCREMENT_MAP
+		li t1,-1
+INCREMENT_MAP:	addi t1,t1,1
+		sb t1,0(t0)
+		
+		# Draw background on both frames
+		background_offset(s0, t0)
 		li t0,1
 		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
-		j GAME_LOOP
+		toggle_frame()
+		render_s(backgrounds, zero, zero, 320, 240, zero, zero, s0)
 
 GAME_LOOP:	call RECEIVE_INPUT
-		#call MUSIC
+		# call MUSIC
 		
 		next_frame(s0)
 		#################################################
@@ -147,7 +184,7 @@ GAME_LOOP:	call RECEIVE_INPUT
 		la s3,P1_POS
 		mv s4,zero
 		li s5,1
-		la s6,P1_ATTACK
+		la s6,P1_STATE
 		
 		lb a0,0(s6)
 		jal s9,ATTACK
@@ -157,9 +194,9 @@ GAME_LOOP:	call RECEIVE_INPUT
 		#########################
 		load_pos(P2_POS, s1, s2)
 		la s3,P2_POS
-		li s4,0#56
+		li s4,1
 		li s5,-1
-		la s6,P2_ATTACK
+		la s6,P2_STATE
 		
 		lb a0,0(s6)
 		jal s9,ATTACK
@@ -168,6 +205,10 @@ GAME_LOOP:	call RECEIVE_INPUT
 		j GAME_LOOP
 
 ATTACK:		beqz a0,A_STATIC_CHAR
+
+		li t1,56
+		mul s4,s4,t1
+
 		li t1,1
 		beq a0,t1,A_MID_KICK
 		li t1,2
@@ -198,6 +239,9 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		li t1,14
 		beq a0,t1,A_HIGH_PUNCH
 		
+		li t1,15
+		beq a0,t1,A_BOW
+						
 		jr s9
 
 #########################################################################################
@@ -219,6 +263,7 @@ A_BSOMERSAULT:	j BSOMERSAULT
 A_FSOMERSAULT:	j FSOMERSAULT
 A_JUMP:		j JUMP
 A_HIGH_PUNCH:	j HIGH_PUNCH
+A_BOW:		j BOW
 
 #########################################
 #	MID KICK MOVEMENT		#
@@ -487,59 +532,6 @@ CROUCH_BLOCK_0:	render(crouch_block, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
-#	JUMP MOVEMENT			#
-#########################################
-JUMP:		lbu t0,1(s6)
-		
-		beqz t0,JUMP_0
-		li t1,1
-		beq t0,t1,JUMP_1
-		li t1,2
-		beq t0,t1,JUMP_2
-		li t1,7
-		blt t0,t1,JUMP_3
-		beq t0,t1,JUMP_4
-		li t1,8
-		beq t0,t1,JUMP_5
-		j ATTACK_END
-		
-JUMP_0:		render(landing, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-JUMP_1:		render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-JUMP_2:		li t1,-8
-		h_increment_ar(s3, t1, 2, t0)		# y -= 8
-		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-JUMP_3:		render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-JUMP_4:		li t1,8
-		h_increment_ar(s3, t1, 2, t0)		# y += 8
-		load_pos_r(s3, s1, s2)
-		render(jump, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-JUMP_5:		render(landing, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-
-#########################################
-#	HIGH PUNCH MOVEMENT		#
-#########################################
-HIGH_PUNCH:	lbu t0,1(s6)
-		
-		beqz t0,HIGH_PUNCH_0
-		li t1,2
-		ble t0,t1,HIGH_PUNCH_1
-		li t1,3
-		beq t0,t1,HIGH_PUNCH_0
-		j ATTACK_END
-		
-HIGH_PUNCH_0:	render(punch, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-HIGH_PUNCH_1:	render(high_punch, s1, s2, 48, 56, s0, zero, s4)
-		j ATTACK_ANIM_E
-
-#########################################
 #	BSOMERSAULT MOVEMENT		#
 #########################################
 BSOMERSAULT:	lbu t0,1(s6)
@@ -690,6 +682,78 @@ FSOMERSAULT_9:	li t0,12
 		j ATTACK_ANIM_E
 
 #########################################
+#	JUMP MOVEMENT			#
+#########################################
+JUMP:		lbu t0,1(s6)
+		
+		beqz t0,JUMP_0
+		li t1,1
+		beq t0,t1,JUMP_1
+		li t1,2
+		beq t0,t1,JUMP_2
+		li t1,7
+		blt t0,t1,JUMP_3
+		beq t0,t1,JUMP_4
+		li t1,8
+		beq t0,t1,JUMP_5
+		j ATTACK_END
+		
+JUMP_0:		render(landing, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+JUMP_1:		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+JUMP_2:		li t1,-8
+		h_increment_ar(s3, t1, 2, t0)		# y -= 8
+		load_pos_r(s3, s1, s2)
+		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+JUMP_3:		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+JUMP_4:		li t1,8
+		h_increment_ar(s3, t1, 2, t0)		# y += 8
+		load_pos_r(s3, s1, s2)
+		render(jump, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+JUMP_5:		render(landing, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+#########################################
+#	HIGH PUNCH MOVEMENT		#
+#########################################
+HIGH_PUNCH:	lbu t0,1(s6)
+		
+		beqz t0,HIGH_PUNCH_0
+		li t1,2
+		ble t0,t1,HIGH_PUNCH_1
+		li t1,3
+		beq t0,t1,HIGH_PUNCH_0
+		j ATTACK_END
+		
+HIGH_PUNCH_0:	render(punch, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+HIGH_PUNCH_1:	render(high_punch, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+#########################################
+#	BOW MOVEMENT			#
+#########################################
+BOW:		lbu t0,1(s6)
+		
+		li t1,5
+		blt t0,t1,BOW_0
+		li t1,15
+		blt t0,t1,BOW_1
+		li t1,20
+		blt t0,t1,BOW_0
+		
+		j ATTACK_END
+
+BOW_0:		render(bow_1, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+BOW_1:		render(bow_2, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+#########################################
 #	GENERIC ATTACK OPERATIONS	#
 #########################################
 ATTACK_ANIM_E:	li t1,1
@@ -697,13 +761,20 @@ ATTACK_ANIM_E:	li t1,1
 		jr s9
 
 ATTACK_END:	sh zero,0(s6)
+		li t0,56
+		divu s4,s4,t0
 		j STATIC_CHAR
 
 #########################################
 #	NON-ATTACKING MOVEMENT		#
 #########################################
-STATIC_CHAR:	render_s(char_torso, s1, s2, 48, 32, s0, zero, s4)
+STATIC_CHAR:	li t0,32
+		mul t0,s4,t0
+		render_s(char_torso, s1, s2, 48, 32, s0, zero, t0)
 		addi s2,s2,32
+		
+		li t0,24
+		mul s4,s4,t0
 
 #########################################
 #	WALKING ANIMATION		#
@@ -782,9 +853,12 @@ RECEIVE_INPUT:	li t1,0xFF200000
 		andi t0,t0,0x0001
   	 	beq t0,zero,REC_INPUT_CLN
   		lw t0,4(t1)
+  		
+  		# Cheats
+  		check_key('v', RI_NEXT_ROUND, t0, t1)
 
-		# P1
-		la s0,P1_ATTACK
+		# P1 normal movements
+		la s0,P1_STATE
   		check_key('d', RI_MV_RIGHT, t0, t1)
   		check_key('c', RI_JAB, t0, t1)
   		check_key('x', RI_CROUCH_BLK, t0, t1)
@@ -794,7 +868,7 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		check_key('w', RI_JUMP, t0, t1)
   		check_key('e', RI_HIGH_PUNCH, t0, t1)
  
- 		# Fire movements
+ 		# P1 fire movements
   		check_key('D', RI_MID_KICK, t0, t1)
   		check_key('C', RI_SJ_KICK, t0, t1)
   		check_key('X', RI_FWD_SWEEP, t0, t1)
@@ -807,32 +881,32 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		lb t1,GAMEMODE
   		beqz t1,REC_INPUT_CLN
   		
-  		# P2
-  		la s0,P2_ATTACK
+  		# P2 normal movements
+  		la s0,P2_STATE
   		check_key('k', RI_MV_RIGHT, t0, t1)
-  		check_key('m', RI_JAB, t0, t1)
+  		check_key('b', RI_JAB, t0, t1)
   		check_key('n', RI_CROUCH_BLK, t0, t1)
-  		check_key('b', RI_BSOMERSAULT, t0, t1)
+  		check_key('m', RI_BSOMERSAULT, t0, t1)
   		check_key('h', RI_MV_LEFT, t0, t1)
-  		check_key('y', RI_FSOMERSAULT, t0, t1)
+  		check_key('i', RI_FSOMERSAULT, t0, t1)
   		check_key('u', RI_JUMP, t0, t1)
-  		check_key('i', RI_HIGH_PUNCH, t0, t1)
+  		check_key('y', RI_HIGH_PUNCH, t0, t1)
  
- 		# Fire movements
-  		check_key('K', RI_MID_KICK, t0, t1)
-  		check_key('M', RI_SJ_KICK, t0, t1)
+ 		# P1 fire movements (NEEDS REWORK)
+  		check_key('H', RI_MID_KICK, t0, t1)
+  		check_key('B', RI_SJ_KICK, t0, t1)
   		check_key('N', RI_FWD_SWEEP, t0, t1)
-  		check_key('B', RI_BWD_SWEEP, t0, t1)
-  		check_key('H', RI_ROUNDHOUSE, t0, t1)
-  		check_key('Y', RI_HIGH_B_KICK, t0, t1)
+  		check_key('M', RI_BWD_SWEEP, t0, t1)
+  		check_key('K', RI_ROUNDHOUSE, t0, t1)
+  		check_key('I', RI_HIGH_B_KICK, t0, t1)
   		check_key('U', RI_FLYING_KICK, t0, t1)
-  		check_key('I', RI_HIGH_KICK, t0, t1)
+  		check_key('Y', RI_HIGH_KICK, t0, t1)
   		
-REC_INPUT_CLN:	la t0,P1_ATTACK
+REC_INPUT_CLN:	la t0,P1_STATE
 		sh zero,2(t0)
 
 		beqz t0,REC_INPUT_END
-		la t0,P2_ATTACK
+		la t0,P2_STATE
 		sh zero,2(t0)
 
   		j REC_INPUT_END
@@ -891,6 +965,8 @@ RI_JUMP:	register_attack(s0, 13, REC_INPUT_CLN)
 # High punch		(press e)
 RI_HIGH_PUNCH:	register_attack(s0, 14, REC_INPUT_CLN)
 
+RI_NEXT_ROUND:	j NEXT_ROUND
+
 REC_INPUT_END:	ret	# retorna
 
 EXIT:		li a7,10
@@ -947,6 +1023,9 @@ EXIT:		li a7,10
 .include "sprites/somersault/ss_upside.data"
 .include "sprites/somersault/ss_right.data"
 .include "sprites/somersault/ss_left.data"
+
+.include "sprites/bow/bow_1.data"
+.include "sprites/bow/bow_2.data"
 
 .text
 .include "render.s"

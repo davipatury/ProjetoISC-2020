@@ -163,9 +163,6 @@ mul %r,%r,%r1
 	li %r3,320
 	addi %r3,%r3,-%mw
 	
-	print_int(%r2)
-	print_int(%r3)
-	
 	blez %r2,ZERO
 	ble %r2,%r3,SAVE
 	mv %r2,%r3
