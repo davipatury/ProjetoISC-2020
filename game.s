@@ -1,5 +1,11 @@
 .include "macros.s"
 
+############## ATENÇÃO #############
+# MUDE O VALOR ABAIXO PARA 75 CASO #
+# FOR RODAR O JOGO USANDO FPGRARS  #
+####################################
+.eqv FPG_RARS 75
+
 .data
 #################################
 # 	  STATE TABLE		#
@@ -353,7 +359,7 @@ BWD_SWEEP_0:	render(crouch_block, s1, s2, 48, 56, s0, zero, s4)
 BWD_SWEEP_1:	render(bwd_sweep_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_2:	li t0,-24
-		increment_pos_x(s3, t0, 0, s5, 76, t1, t2)
+		increment_pos_x(s3, t0, 0, s5, 76, t1, t2, t3)
 		load_pos_r(s3, s1, s2)
 		render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -361,7 +367,7 @@ BWD_SWEEP_3:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_4:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		li t0,24
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -416,7 +422,7 @@ HIGH_BK_KICK:	lbu t0,1(s6)
 HIGH_BK_KICK_0:	render(high_bk_kick_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 HIGH_BK_KICK_1:	li t0,-16
-		increment_pos_x(s3, t0, 0, s5, 72, t1, t2)
+		increment_pos_x(s3, t0, 0, s5, 72, t1, t2, t3)
 		load_pos_r(s3, s1, s2)
 		render(high_bk_kick_2, s1, s2, 56, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -424,7 +430,7 @@ HIGH_BK_KICK_2:	render(high_bk_kick_3, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 HIGH_BK_KICK_3:	render(high_bk_kick_2, s1, s2, 56, 56, s0, zero, s4)
 		li t0,16
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -458,7 +464,7 @@ FLYING_KICK_2:	li t1,-8
 		render(jump, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FLYING_KICK_3:	li t0,8
-		increment_pos_x(s3, t0, 0, s5, 64, t1, t2)	# x += 8
+		increment_pos_x(s3, t0, 0, s5, 64, t1, t2, t3)	# x += 8
 		li t1,-16
 		h_increment_ar(s3, t1, 2, t0)		# y -= 16	
 		load_pos_r(s3, s1, s2)
@@ -567,7 +573,7 @@ BSOMERSAULT_1:	li t1,-8
 BSOMERSAULT_2:	li t1,-12
 		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		li t0,-20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 20
 		load_pos_r(s3, s1, s2)
 		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -576,31 +582,31 @@ BSOMERSAULT_3:	render(ss_left, s1, s2, 48, 56, s0, zero, s4)
 BSOMERSAULT_4:	render(ss_upside, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BSOMERSAULT_5:	li t0,-20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 20
 		load_pos_r(s3, s1, s2)
 		render(ss_right, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BSOMERSAULT_6:	li t0,-20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 20
 		load_pos_r(s3, s1, s2)
 		render(ss_right, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BSOMERSAULT_7:	li t1,12
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
 		li t0,-12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 12
 		load_pos_r(s3, s1, s2)
 		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BSOMERSAULT_8:	li t1,8
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
 		li t0,-12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 12
 		load_pos_r(s3, s1, s2)
 		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BSOMERSAULT_9:	li t0,-12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x -= 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x -= 12
 		load_pos_r(s3, s1, s2)
 		render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -642,7 +648,7 @@ FSOMERSAULT_1:	li t1,-8
 FSOMERSAULT_2:	li t1,-12
 		h_increment_ar(s3, t1, 2, t0)		# y -= 8
 		li t0,20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 20
 		load_pos_r(s3, s1, s2)
 		render(ss_landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -651,31 +657,31 @@ FSOMERSAULT_3:	render(ss_right, s1, s2, 48, 56, s0, zero, s4)
 FSOMERSAULT_4:	render(ss_right, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FSOMERSAULT_5:	li t0,20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 20
 		load_pos_r(s3, s1, s2)
 		render(ss_upside, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FSOMERSAULT_6:	li t0,20
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 20
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 20
 		load_pos_r(s3, s1, s2)
 		render(ss_left, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FSOMERSAULT_7:	li t1,12
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
 		li t0,12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 12
 		load_pos_r(s3, s1, s2)
 		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FSOMERSAULT_8:	li t1,8
 		h_increment_ar(s3, t1, 2, t0)		# y += 8
 		li t0,12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 12
 		load_pos_r(s3, s1, s2)
 		render(ss_straight, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FSOMERSAULT_9:	li t0,12
-		increment_pos_x(s3, t0, 0, s5, 48, t1, t2)	# x += 12
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)	# x += 12
 		load_pos_r(s3, s1, s2)
 		render(landing, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -903,8 +909,10 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		
 REC_INPUT_CLN:	la t0,P1_STATE
 		sh zero,2(t0)
-
+		
+		lb t0,GAMEMODE
 		beqz t0,REC_INPUT_END
+		
 		la t0,P2_STATE
 		sh zero,2(t0)
 
@@ -918,7 +926,7 @@ RI_MV_RIGHT:	lb t0,0(s0)
 		sb t0,2(s0)
 		li t0,4
 		li t1,1
-		increment_pos_x(s0, t0, 4, t1, 48, t2, t3)
+		increment_pos_x(s0, t0, 4, t1, 48, t2, t3, t4)
 		
 		j REC_INPUT_END
 
@@ -930,7 +938,7 @@ RI_MV_LEFT:	lb t0,0(s0)
 		sb t0,2(s0)
 		li t0,-4
 		li t1,1
-		increment_pos_x(s0, t0, 4, t1, 48, t2, t3)
+		increment_pos_x(s0, t0, 4, t1, 48, t2, t3, t4)
 		
 		j REC_INPUT_END
 

@@ -129,9 +129,9 @@ sw t1,0(t0)
 
 # Remova os comentários das linhas abaixo caso queira rodar o jogo usando FPGRARS
 # (sim, ele é tão rápido que a gente tem que dar uma segurada usando sleep)
-#li a0,50
-#li a7,32
-#ecall	
+li a0,FPG_RARS
+li a7,32
+ecall	
 .end_macro
 
 #########################################################
@@ -155,23 +155,27 @@ mul %r,%r,%r1
 #########################################################
 #	Incrementa o valor do registrador $r1 * %mul	#
 #	a posição do endereço %pos + %imm utilizando	#
-#	%r2 e %r3 como suporte, sendo %mw a largura	#
+#	%r2 a %r4 como suporte, sendo %mw a largura	#
 #	máxima que o sprite pode alcançar.		#
 #########################################################
-.macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3)
-	lh %r2,%imm(%pos)
-	mul %r3,%r1,%mul
-	add %r2,%r2,%r3
+.macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3, %r4)
+lh %r2,%imm(%pos)
+mul %r3,%r1,%mul
+add %r2,%r2,%r3
 
-	li %r3,320
-	addi %r3,%r3,-%mw
+li %r3,320
+addi %r3,%r3,-%mw
 	
-	blez %r2,ZERO
-	ble %r2,%r3,SAVE
-	mv %r2,%r3
-	j SAVE
-ZERO:	mv %r2,zero
-SAVE:	sh %r2,%imm(%pos)
+slt %r1,%r2,zero
+mul %r4,%r2,%r1
+sub %r2,%r2,%r4
+	
+slt %r1,%r3,%r2
+sub %r4,%r2,%r3
+mul %r4,%r4,%r1
+sub %r2,%r2,%r4
+
+sh %r2,%imm(%pos)
 .end_macro
 #########################################################
 #	Armazena a posição armazenada em %label		#
