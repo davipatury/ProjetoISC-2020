@@ -4,7 +4,7 @@
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
 ####################################
-.eqv FPG_RARS 75
+.eqv FPG_RARS 0
 
 .data
 #################################
