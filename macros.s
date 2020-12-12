@@ -126,6 +126,9 @@ li t0,0xFF200604
 lw t1,0(t0)
 xori t1,t1,0x001
 sw t1,0(t0)
+
+# Remova os comentários das linhas abaixo caso queira rodar o jogo usando FPGRARS
+# (sim, ele é tão rápido que a gente tem que dar uma segurada usando sleep)
 #li a0,50
 #li a7,32
 #ecall	

@@ -1,6 +1,5 @@
 .include "macros.s"
 
-.align 2
 .data
 #################################
 # 	  STATE TABLE		#
@@ -972,7 +971,6 @@ REC_INPUT_END:	ret	# retorna
 EXIT:		li a7,10
 		ecall
 
-.align 2
 .data
 .include "sprites/misc/splash.data"
 .include "sprites/misc/splash_selection.data"

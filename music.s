@@ -21,9 +21,13 @@ MUSIC:	lw t1,M_LAST_PLAYED	# t1 = last played
 M_CONT:	lh t0,M_CUR_POS		# contador
 	lw t1,M_NOTAS_TOTAL	# carrega o total de notas da memoria
 	ble t0,t1,M_NOTE	# if s0 != s1 THEN toca a proxima nota
-	sw zero,M_CUR_POS,t0
-	sw zero,M_LAST_DUR,t0
-	sw zero,M_LAST_PLAYED,t0
+	
+	la t0,M_CUR_POS
+	sw zero,0(t0)
+	la t0,M_LAST_DUR
+	sw zero,0(t0)
+	la t0,M_LAST_PLAYED
+	sw zero,0(t0)
 	ret			# volta ao main loop
 
 M_NOTE:	la t2,M_NOTAS		# endereço das notas
@@ -36,13 +40,17 @@ M_NOTE:	la t2,M_NOTAS		# endereço das notas
 	li a7,31		# define a chamada de syscall
 	ecall			# toca a nota
 	
-	lw t1,M_CUR_POS
+	la t0,M_CUR_POS
+	lw t1,0(t0)
 	addi t1,t1,1		# contador += 1
-	sw t1,M_CUR_POS,t0	# salva o contador
-	sw a1,M_LAST_DUR,t0	# salva a duracao da nota atual no last duration
+	sw t1,0(t0)		# salva o contador
+	la t0,M_LAST_DUR
+	sw a1,0(t0)	# salva a duracao da nota atual no last duration
 
 	li a7,30		# define o syscall Time
 	ecall			# time
-	sw a0,M_LAST_PLAYED,t0	# salva o instante atual no last played
+
+	la t0,M_LAST_PLAYED
+	sw a0,0(t0)	# salva o instante atual no last played
 
 	ret			# return
