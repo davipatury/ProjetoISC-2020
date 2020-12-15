@@ -282,18 +282,34 @@ MID_KICK:	lbu t0,1(s6)
 		beq t0,t1,MID_KICK_2
 		li t1,5
 		blt t0,t1,MID_KICK_3
-		beq t0,t1,MID_KICK_1
+		beq t0,t1,MID_KICK_4
 		li t1,6
-		beq t0,t1,MID_KICK_0
+		beq t0,t1,MID_KICK_5
 		j ATTACK_END
 
 MID_KICK_0:	render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-MID_KICK_1:	render(mid_kick_1, s1, s2, 56, 56, s0, zero, s4)
+MID_KICK_1:	load_value_r(8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(mid_kick_1, s1, s2, 56, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-MID_KICK_2:	render(mid_kick_2, s1, s2, 76, 56, s0, zero, s4)
+MID_KICK_2:	load_value_r(20, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 76, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(mid_kick_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 MID_KICK_3:	render(mid_kick_2, s1, s2, 76, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+MID_KICK_4:	load_value_r(-20, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(mid_kick_1, s1, s2, 56, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+MID_KICK_5:	load_value_r(-8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -302,15 +318,26 @@ MID_KICK_3:	render(mid_kick_2, s1, s2, 76, 56, s0, zero, s4)
 SJ_KICK:	lbu t0,1(s6)
 		
 		beqz t0,SJ_KICK_0
+		li t1,1
+		beq t0,t1,SJ_KICK_1
 		li t1,3
-		ble t0,t1,SJ_KICK_1
+		ble t0,t1,SJ_KICK_2
 		li t1,4
-		beq t0,t1,SJ_KICK_0
+		beq t0,t1,SJ_KICK_3
 		j ATTACK_END
 		
 SJ_KICK_0:	render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-SJ_KICK_1:	render(sj_kick, s1, s2, 56, 56, s0, zero, s4)
+SJ_KICK_1:	load_value_r(8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(sj_kick, s1, s2, 56, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+SJ_KICK_2:	render(sj_kick, s1, s2, 56, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+SJ_KICK_3:	load_value_r(-8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
+		render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -321,10 +348,14 @@ FWD_SWEEP:	lbu t0,1(s6)
 		beqz t0,FWD_SWEEP_0
 		li t1,1
 		beq t0,t1,FWD_SWEEP_1
+		li t1,2
+		beq t0,t1,FWD_SWEEP_2
 		li t1,5
-		blt t0,t1,FWD_SWEEP_2
-		beq t0,t1,FWD_SWEEP_1
+		blt t0,t1,FWD_SWEEP_3
+		beq t0,t1,FWD_SWEEP_4
 		li t1,6
+		beq t0,t1,FWD_SWEEP_1
+		li t1,7
 		beq t0,t1,FWD_SWEEP_0
 		j ATTACK_END
 		
@@ -332,7 +363,16 @@ FWD_SWEEP_0:	render(crouch_block, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 FWD_SWEEP_1:	render(fwd_sweep_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-FWD_SWEEP_2:	render(fwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
+FWD_SWEEP_2:	load_value_r(28, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 76, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(fwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FWD_SWEEP_3:	render(fwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+FWD_SWEEP_4:	render(fwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
+		load_value_r(-28, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -358,7 +398,7 @@ BWD_SWEEP_0:	render(crouch_block, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_1:	render(bwd_sweep_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-BWD_SWEEP_2:	li t0,-24
+BWD_SWEEP_2:	load_value(-28, t0, s5, t1)
 		increment_pos_x(s3, t0, 0, s5, 76, t1, t2, t3)
 		load_pos_r(s3, s1, s2)
 		render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
@@ -366,7 +406,7 @@ BWD_SWEEP_2:	li t0,-24
 BWD_SWEEP_3:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 BWD_SWEEP_4:	render(bwd_sweep_2, s1, s2, 76, 56, s0, zero, s4)
-		li t0,24
+		load_value(28, t0, s5, t1)
 		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
 		j ATTACK_ANIM_E
 
@@ -382,26 +422,45 @@ ROUNDHOUSE:	lbu t0,1(s6)
 		beq t0,t1,ROUNDHOUSE_2
 		li t1,3
 		beq t0,t1,ROUNDHOUSE_3
-		li t1,8
-		blt t0,t1,ROUNDHOUSE_4
-		beq t0,t1,ROUNDHOUSE_5
+		li t1,5
+		beq t0,t1,ROUNDHOUSE_4
 		li t1,9
+		blt t0,t1,ROUNDHOUSE_5
 		beq t0,t1,ROUNDHOUSE_6
+		li t1,10
+		beq t0,t1,ROUNDHOUSE_7
 		j ATTACK_END
 		
 ROUNDHOUSE_0:	render(roundhouse_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 ROUNDHOUSE_1:	render(roundhouse_2, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-ROUNDHOUSE_2:	render(roundhouse_3, s1, s2, 60, 56, s0, zero, s4)
+ROUNDHOUSE_2:	load_value_r(12, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 60, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(roundhouse_3, s1, s2, 60, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-ROUNDHOUSE_3:	render(roundhouse_4, s1, s2, 48, 56, s0, zero, s4)
+ROUNDHOUSE_3:	load_value_r(-12, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(roundhouse_4, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-ROUNDHOUSE_4:	render(roundhouse_5, s1, s2, 72, 56, s0, zero, s4)
+ROUNDHOUSE_4:	load_value_r(24, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 72, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(roundhouse_5, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-ROUNDHOUSE_5:	render(mid_kick_1, s1, s2, 56, 56, s0, zero, s4)
+ROUNDHOUSE_5:	render(roundhouse_5, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-ROUNDHOUSE_6:	render(kick, s1, s2, 48, 56, s0, zero, s4)
+ROUNDHOUSE_6:	load_value_r(-16, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(mid_kick_1, s1, s2, 56, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+ROUNDHOUSE_7:	load_value_r(-8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 48, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
@@ -493,18 +552,39 @@ HIGH_KICK:	lbu t0,1(s6)
 		beqz t0,HIGH_KICK_0
 		li t1,1
 		beq t0,t1,HIGH_KICK_1
+		li t1,2
+		beq t0,t1,HIGH_KICK_2
 		li t1,5
-		blt t0,t1,HIGH_KICK_2
-		beq t0,t1,HIGH_KICK_1
+		blt t0,t1,HIGH_KICK_3
+		beq t0,t1,HIGH_KICK_4
 		li t1,6
-		beq t0,t1,HIGH_KICK_0
+		beq t0,t1,HIGH_KICK_5
+		
 		j ATTACK_END
 		
 HIGH_KICK_0:	render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-HIGH_KICK_1:	render(high_kick_1, s1, s2, 56, 56, s0, zero, s4)
+HIGH_KICK_1:	load_value_r(8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(high_kick_1, s1, s2, 56, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
-HIGH_KICK_2:	render(high_kick_2, s1, s2, 68, 56, s0, zero, s4)
+HIGH_KICK_2:	load_value_r(12, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 68, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(high_kick_2, s1, s2, 68, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+HIGH_KICK_3:	render(high_kick_2, s1, s2, 68, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+HIGH_KICK_4:	load_value_r(-12, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(high_kick_1, s1, s2, 56, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+HIGH_KICK_5:	load_value_r(-8, t0, s5, t1)
+		increment_pos_x(s3, t0, 0, s5, 56, t1, t2, t3)
+		load_pos_r(s3, s1, s2)
+		render(kick, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################

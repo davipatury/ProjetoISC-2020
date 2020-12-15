@@ -159,7 +159,7 @@ mul %r,%r,%r1
 #	máxima que o sprite pode alcançar.		#
 #########################################################
 .macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3, %r4)
-lh %r2,%imm(%pos)
+lhu %r2,%imm(%pos)
 mul %r3,%r1,%mul
 add %r2,%r2,%r3
 
@@ -177,6 +177,20 @@ sub %r2,%r2,%r4
 
 sh %r2,%imm(%pos)
 .end_macro
+
+.macro load_value(%value, %r0, %mul, %r1)
+slt %r1,%mul,zero
+xori %r1,%r1,1
+li %r0,%value
+mul %r0,%r0,%r1
+.end_macro
+
+.macro load_value_r(%value, %r0, %mul, %r1)
+slt %r1,%mul,zero
+li %r0,%value
+mul %r0,%r0,%r1
+.end_macro
+
 #########################################################
 #	Armazena a posição armazenada em %label		#
 #	nos registradores %x e %y.			#
@@ -213,11 +227,11 @@ beq %r,%r1,%label
 #	em game.s					#
 #########################################################
 .macro register_attack(%address, %n, %label)
-	lb t1,0(%address)
-	bnez t1,END
-	li t1,%n
-	sb t1,0(%address)
-END:	j %label
+lb t1,0(%address)
+bnez t1,%label
+li t1,%n
+sb t1,0(%address)
+j %label
 .end_macro
 
 #########################################################
