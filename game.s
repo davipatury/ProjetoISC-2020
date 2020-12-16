@@ -1,4 +1,5 @@
-.include "macros.s"
+.include "macros.s"		# Macros do código
+.include "MACROSv21.s"		# Macros pra bitmap display
 
 ############## ATENÇÃO #############
 # MUDE O VALOR ABAIXO PARA 75 CASO #
@@ -1228,7 +1229,10 @@ EXIT:		li a7,10
 .include "sprites/death/death_3.data"
 .include "sprites/death/death_4.data"
 
+.include "sprites/misc/clock_retangule.data"
+
 .text
 .include "render.s"
 .include "music.s"
 .include "ai.s"
+.include "SYSTEMv21.s"
