@@ -115,9 +115,7 @@ START_GAME:	#li a7,34
 		#lw a0,0(a0)
 		#ecall
 
-NEXT_ROUND:	reset_frame()	# Set frame to 0
-
-		# Set players state to (15 (bowing), 0, 0, 0)
+NEXT_ROUND:	# Set players state to (15 (bowing), 0, 0, 0)
 		li t0,0x0000000f
 		la t1,P1_STATE
 		sw t0,0(t1)
@@ -148,10 +146,11 @@ INCREMENT_MAP:	addi t1,t1,1
 		
 		# Draw background on both frames
 		background_offset(s0, t0)
-		li t0,1
+		next_frame(t0)
 		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
 		toggle_frame()
-		render_s(backgrounds, zero, zero, 320, 240, zero, zero, s0)
+		next_frame(t0)
+		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
 
 GAME_LOOP:	call RECEIVE_INPUT
 		call E_AI

@@ -19,9 +19,19 @@ E_AI:		lb t0,GAMEMODE
 E_AI_ST_1:	li t0,27
 		bgt s1,t0,E_AI_WALK_TWDS	# se a distância for maior que 27, anda em direção ao jogador
 		
-		li t1,14			# high punch
-		sb t1,0(s0)
+		li t0,-72
+		blt s1,t0,E_AI_WALK_BACK
 		
+		bltz s1,E_AI_ST_1_B
+
+# Ataque frontal	
+E_AI_ST_1_F:	li t1,14			# high punch
+		sb t1,0(s0)
+		j E_AI_RST_WALK
+
+# Ataque de costas
+E_AI_ST_1_B:	li t1,6				# high back kick
+		sb t1,0(s0)
 		j E_AI_RST_WALK
 
 # Walk back
