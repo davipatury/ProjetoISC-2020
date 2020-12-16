@@ -29,6 +29,13 @@ li a7,11
 ecall
 .end_macro
 
+#
+.macro distance_between(%label1, %label2, %r)
+lhu t0,%label1
+lhu t1,%label2
+sub %r,t1,t0
+.end_macro
+
 #########################################################
 #	"Empurra" 2 words no offset %off para "baixo"	#
 #########################################################

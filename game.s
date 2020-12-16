@@ -154,6 +154,7 @@ INCREMENT_MAP:	addi t1,t1,1
 		render_s(backgrounds, zero, zero, 320, 240, zero, zero, s0)
 
 GAME_LOOP:	call RECEIVE_INPUT
+		call E_AI
 		# call MUSIC
 		
 		next_frame(s0)
@@ -1219,3 +1220,4 @@ EXIT:		li a7,10
 .text
 .include "render.s"
 .include "music.s"
+.include "ai.s"
