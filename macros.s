@@ -1,5 +1,5 @@
 #########################################################
-#	Multiplicar conte˙do do registrador %r		#
+#	Multiplicar conte√∫do do registrador %r		#
 #	com o imediato %imm, armazenando		#
 #	o resultado em %r.				#
 #########################################################
@@ -139,7 +139,7 @@ mv %r,t4
 #		  Veja mais em render.s			#
 #########################################################
 .macro render(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereÁo da imagem
+la a0,%adr	# endere√ßo da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 li a3,%w	# width
@@ -154,7 +154,7 @@ jal RENDER
 .end_macro
 
 .macro render_s(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereÁo da imagem
+la a0,%adr	# endere√ßo da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 li a3,%w	# width
@@ -166,7 +166,7 @@ jal RENDER
 .end_macro
 
 .macro render_r(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereÁo da imagem
+la a0,%adr	# endere√ßo da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 mv a3,%w	# width
@@ -178,7 +178,7 @@ jal RENDER
 .end_macro
 
 #########################################################
-#	Armazena em %r o frame atual (que est· sendo	#
+#	Armazena em %r o frame atual (que est√° sendo	#
 #	apresentado na tela).				#
 #########################################################
 .macro current_frame(%r)
@@ -187,7 +187,7 @@ lw %r,0(%r)
 .end_macro
 
 #########################################################
-#	Armazena em %r o prÛximo frame (que n„o est·	#
+#	Armazena em %r o pr√≥ximo frame (que n√£o est√°	#
 #	sendo apresentado na tela)			#
 #########################################################
 .macro next_frame(%r)
@@ -211,7 +211,7 @@ ecall
 .end_macro
 
 #########################################################
-#	Retorna o frame pra sua posiÁ„o original (0)	#
+#	Retorna o frame pra sua posi√ß√£o original (0)	#
 #########################################################
 .macro reset_frame()
 li t0,0xFF200604
@@ -230,9 +230,9 @@ mul %r,%r,%r1
 
 #########################################################
 #	Incrementa o valor do registrador $r1 * %mul	#
-#	a posiÁ„o do endereÁo %pos + %imm utilizando	#
+#	a posi√ß√£o do endere√ßo %pos + %imm utilizando	#
 #	%r2 a %r4 como suporte, sendo %mw a largura	#
-#	m·xima que o sprite pode alcanÁar.		#
+#	m√°xima que o sprite pode alcan√ßar.		#
 #########################################################
 .macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3, %r4)
 lhu %r2,%imm(%pos)
@@ -268,7 +268,7 @@ mul %r0,%r0,%r1
 .end_macro
 
 #########################################################
-#	Armazena a posiÁ„o armazenada em %label		#
+#	Armazena a posi√ß√£o armazenada em %label		#
 #	nos registradores %x e %y.			#
 #########################################################
 .macro load_pos(%label, %x, %y)
@@ -278,7 +278,7 @@ lh %y,2(%y)
 .end_macro
 
 #########################################################
-#	Armazena a posiÁ„o armazenada no endereÁo	#
+#	Armazena a posi√ß√£o armazenada no endere√ßo	#
 #	%r nos registradores %x e %y.			#
 #########################################################
 .macro load_pos_r(%r, %x, %y)
@@ -299,7 +299,7 @@ beq %r,%r1,%label
 #	Registra um ataque %n do Player %address	#
 #	e pula para %label.
 #							#
-#	Para mais informaÁıes veja ATTACK TABLE		#
+#	Para mais informa√ß√µes veja ATTACK TABLE		#
 #	em game.s					#
 #########################################################
 .macro register_attack(%address, %n, %label)
@@ -311,7 +311,7 @@ j %label
 .end_macro
 
 #########################################################
-#	Incrementa %value ao BYTE no endereÁo		#
+#	Incrementa %value ao BYTE no endere√ßo		#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro b_increment_ar(%r1, %value, %imm, %r)
@@ -321,7 +321,7 @@ sb %r,%imm(%r1)
 .end_macro
 
 #########################################################
-#	Decrementa %value do BYTE no endereÁo		#
+#	Decrementa %value do BYTE no endere√ßo		#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro b_decrement_ar(%r1, %value, %imm, %r)
@@ -333,11 +333,41 @@ sb %r,%imm(%r1)
 .end_macro
 
 #########################################################
-#	Incrementa %value a HALFWORD no endereÁo	#
+#	Incrementa %value a HALFWORD no endere√ßo	#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro h_increment_ar(%r1, %value, %imm, %r)
 lh %r,%imm(%r1)
 add %r,%r,%value
 sh %r,%imm(%r1)
+.end_macro
+
+#########################################################
+#		  Retorna o tempo atual			#
+#		      e salva em %r			#
+#########################################################
+.macro tempo(%r)
+li a7, 30
+ecall
+mv %r, a0
+.end_macro
+
+#########################################################
+#	     Printa o inteiro correspondente		#
+#            aos segundos restantes do round		#
+#########################################################
+.macro print_clock()
+	# Printa o ret√¢ngulo embaixo
+	li t0, 152		# x
+	li t1, 5		# y
+	render_s(clock_retangule, t0, t1, 20, 8, s0, zero, zero)
+	
+	# Printa o n√∫mero
+	mv a0, t5		# Int a ser impresso
+	li a1, 155		# Coluna
+	li a2, 5		# Linha
+	li a3, 0xFF		# Cor
+	mv a4, s0		# Frame a ser impresso
+	li a7, 101		# PrintInt
+	ecall
 .end_macro
