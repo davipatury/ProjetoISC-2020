@@ -4,7 +4,7 @@
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
 ####################################
-.eqv FPG_RARS 0
+.eqv FPG_RARS 75
 
 .data
 #################################
@@ -29,8 +29,7 @@
 # 14: HIGH PUNCH		#
 ########## MISC STATES ##########
 # 15: BOWING			#
-########## DEAD STATES ##########
-# 16: NORMAL DEATH		#
+# 16: DEATH			#
 #################################
 P1_STATE:	.byte 0, 0		# attack, curr sprite
 P1_WALKING:	.byte 0, 0		# direction, curr sprite
@@ -39,6 +38,15 @@ P1_POS:		.half 32, 168		# top left x, y
 P2_STATE:	.byte 0, 0
 P2_WALKING:	.byte 0, 0
 P2_POS:		.half 240, 168
+
+P1_HITBOX:	.byte 0, 0, 0, 0
+P2_HITBOX:	.byte 0, 0, 0, 0
+
+P1_HURTBOX:	.byte 16, 1, 10, 53
+P2_HURTBOX:	.byte 22, 1, 10, 53
+
+DEF_HURTBOX:	.byte 16, 1, 10, 53
+DEF_R_HURTBOX:	.byte 22, 1, 10, 53
 
 #################################
 #	    MAP TABLE		#
@@ -124,6 +132,11 @@ NEXT_ROUND:	reset_frame()	# Set frame to 0
 		li t1,0x00a800f0	# 240,	168
 		sw t1,0(t0)
 		
+		# Reset hitbox
+		la t0,P1_HITBOX
+		sw zero,0(t0)
+		sw zero,4(t0)
+		
 		# Cycle background
 		la t0,CURRENT_MAP
 		lb t1,0(t0)
@@ -206,9 +219,59 @@ GAME_LOOP:	call RECEIVE_INPUT
 		lb a0,0(s6)
 		jal s9,ATTACK
 		
+		jal s9,HIT_CHECK
+		
 		toggle_frame()
 		j GAME_LOOP
 
+#########################
+#	HIT CHECK	#
+#########################
+HIT_CHECK:	la s2,P1_HITBOX
+		la s3,P2_HURTBOX
+		la s4,P2_STATE
+		lbu t0,2(s2)
+		beqz t0,HC_P2
+		
+		load_pos(P1_POS, s0, t0)
+		load_pos(P2_POS, s1, t0)
+		collide_boxes(s0, s1, s2, s3, 0, 2, s8)		# x
+		
+		load_pos(P1_POS, t0, s0)
+		load_pos(P2_POS, t0, s1)
+		collide_boxes(s0, s1, s2, s3, 1, 3, t0)		# y
+
+		and s8,s8,t0
+		
+		bnez s8,HC_DEATH
+
+HC_P2:		la s2,P2_HITBOX
+		la s3,P1_HURTBOX
+		la s4,P1_STATE
+		lbu t0,2(s2)
+		beqz t0,HC_END
+		
+		load_pos(P2_POS, s0, t0)
+		load_pos(P1_POS, s1, t0)
+		collide_boxes(s0, s1, s2, s3, 0, 2, s8)		# x
+		
+		load_pos(P2_POS, t0, s0)
+		load_pos(P1_POS, t0, s1)
+		collide_boxes(s0, s1, s2, s3, 1, 3, t0)		# y
+		
+		and s8,s8,t0
+		bnez s8,HC_DEATH
+		
+		j HC_END
+
+HC_DEATH:	li t0,16
+		sb t0,0(s4)
+
+HC_END:		jr s9
+
+#########################
+#	ATTACK CHECK	#
+#########################
 ATTACK:		beqz a0,A_STATIC_CHAR
 
 		li t1,56
@@ -246,6 +309,9 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		
 		li t1,15
 		beq a0,t1,A_BOW
+		
+		li t1,16
+		beq a0,t1,A_DEATH
 						
 		jr s9
 
@@ -269,6 +335,7 @@ A_FSOMERSAULT:	j FSOMERSAULT
 A_JUMP:		j JUMP
 A_HIGH_PUNCH:	j HIGH_PUNCH
 A_BOW:		j BOW
+A_DEATH:	j DEATH
 
 #########################################
 #	MID KICK MOVEMENT		#
@@ -839,6 +906,30 @@ BOW_1:		render(bow_2, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
+#	DEATH MOVEMENT (?)		#
+#########################################
+DEATH:		lbu t0,1(s6)
+		
+		beqz t0,DEATH_0
+		li t1,1
+		beq t0,t1,DEATH_1
+		li t1,2
+		beq t0,t1,DEATH_2
+		li t1,5
+		blt t0,t1,DEATH_3
+		
+		j NEXT_ROUND
+
+DEATH_0:	render(death_1, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+DEATH_1:	render(death_2, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+DEATH_2:	render(death_3, s1, s2, 68, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+DEATH_3:	render(death_4, s1, s2, 72, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+#########################################
 #	GENERIC ATTACK OPERATIONS	#
 #########################################
 ATTACK_ANIM_E:	li t1,1
@@ -853,7 +944,14 @@ ATTACK_END:	sh zero,0(s6)
 #########################################
 #	NON-ATTACKING MOVEMENT		#
 #########################################
-STATIC_CHAR:	li t0,32
+STATIC_CHAR:	la t0,DEF_HURTBOX
+		li t1,4
+		mul t1,s4,t1
+		add s8,t0,t1
+		update_hitbox_i(s8, s4, P1_HURTBOX)
+		reset_hitbox(s4, P1_HITBOX)
+
+		li t0,32
 		mul t0,s4,t0
 		render_s(char_torso, s1, s2, 48, 32, s0, zero, t0)
 		addi s2,s2,32
@@ -1112,6 +1210,11 @@ EXIT:		li a7,10
 
 .include "sprites/bow/bow_1.data"
 .include "sprites/bow/bow_2.data"
+
+.include "sprites/death/death_1.data"
+.include "sprites/death/death_2.data"
+.include "sprites/death/death_3.data"
+.include "sprites/death/death_4.data"
 
 .text
 .include "render.s"

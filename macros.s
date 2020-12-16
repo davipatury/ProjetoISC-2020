@@ -58,12 +58,80 @@ li t1,%h
 sh t1,6(t0)
 .end_macro
 
+#
+.macro update_hitbox(%adr, %y0, %inc, %label)
+lw t0,0(%adr)
+lw t1,4(%adr)
+
+mul t0,t0,t1
+
+add t0,t0,%adr
+addi t2,t0,%inc
+
+li t0,14
+divu t0,%y0,t0
+la t1,%label
+add t1,t1,t0
+
+li t3,2
+mul t0,t0,t3
+add t2,t2,t0
+
+lw t0,0(t2)
+sw t0,0(t1)
+.end_macro
+
+#
+.macro update_hitbox_i(%adr, %y0, %label)
+li t1,4
+mul t0,t1,%y0
+la t1,%label
+add t1,t1,t0
+
+lw t0,0(%adr)
+sw t0,0(t1)
+.end_macro
+
+#
+.macro reset_hitbox(%y0, %label)
+li t1,4
+mul t0,t1,%y0
+la t1,%label
+add t1,t1,t0
+
+sw zero,0(t1)
+.end_macro
+
+#
+.macro collide_boxes(%p1, %p2, %adr1, %adr2, %imm1, %imm2, %r)
+lbu t0,%imm1(%adr1)
+add t0,t0,%p1
+lbu t1,%imm2(%adr1)
+add t1,t1,t0
+
+lbu t2,%imm1(%adr2)
+add t2,t2,%p2
+lbu t3,%imm2(%adr2)
+add t3,t3,t2
+
+slt t4,t2,t1
+slt t5,t2,t3
+
+and t4,t4,t5
+
+slt t5,t2,t0
+or t4,t4,t5
+slt t5,t0,t3
+and t4,t4,t5
+
+mv %r,t4
+.end_macro
+
 #########################################################
 #			RENDERING			#
 #		  Veja mais em render.s			#
 #########################################################
 .macro render(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-update_clear(%x, %y, %w, %h)
 la a0,%adr	# endereço da imagem
 mv a1,%x	# x
 mv a2,%y	# y
@@ -72,6 +140,9 @@ li a4,%h	# height
 mv a5,%f	# frame (0 ou 1)
 mv a6,%x0	# x0
 mv a7,%y0	# y0
+update_clear(%x, %y, %w, %h)
+update_hitbox(a0, %y0, 8, P1_HURTBOX)
+update_hitbox(a0, %y0, 12, P1_HITBOX)
 jal RENDER
 .end_macro
 
@@ -127,8 +198,6 @@ lw t1,0(t0)
 xori t1,t1,0x001
 sw t1,0(t0)
 
-# Remova os comentários das linhas abaixo caso queira rodar o jogo usando FPGRARS
-# (sim, ele é tão rápido que a gente tem que dar uma segurada usando sleep)
 li a0,FPG_RARS
 li a7,32
 ecall	
