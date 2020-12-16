@@ -371,3 +371,20 @@ mv %r, a0
 	li a7, 101		# PrintInt
 	ecall
 .end_macro
+
+# MUSIC MACROS
+.macro play_music(%b, %t)
+li s1,%b
+mv s2,%t
+call MUSIC
+.end_macro
+
+.macro reset_music()
+la t0,MUSIC_STATUS
+sw zero,0(t0)
+sw zero,4(t0)
+sw zero,8(t0)
+sw zero,16(t0)
+sw zero,20(t0)
+sw zero,24(t0)
+.end_macro

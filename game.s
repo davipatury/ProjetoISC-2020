@@ -5,7 +5,7 @@
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
 ####################################
-.eqv FPG_RARS 75
+.eqv FPG_RARS 0
 
 .data
 #################################
@@ -68,11 +68,19 @@ GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
 FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 
 .text
-SPLASH:		reset_frame()
+SPLASH:		call SETUP_MUSIC
+		reset_frame()
 		li t0,1
 		render_s(splash, zero, zero, 320, 240, t0, zero, zero)
 		toggle_frame()
 		render_s(splash, zero, zero, 320, 240, zero, zero, zero)
+		
+		#li s1,0
+		#li s2,0
+		#call MUSIC
+		#li s1,1
+		#li s2,0
+		#call MUSIC
 
 SPLASH_RENDER:	lb s0,GAMEMODE
 		li s1,32
@@ -116,7 +124,8 @@ START_GAME:	#li a7,34
 		#lw a0,0(a0)
 		#ecall
 
-NEXT_ROUND:	# Set players state to (15 (bowing), 0, 0, 0)
+NEXT_ROUND:	reset_music()
+		# Set players state to (15 (bowing), 0, 0, 0)
 		li t0,0x0000000f
 		la t1,P1_STATE
 		sw t0,0(t1)
@@ -155,9 +164,11 @@ INCREMENT_MAP:	addi t1,t1,1
 		next_frame(t0)
 		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
 
-GAME_LOOP:	call RECEIVE_INPUT
+GAME_LOOP:	lb s2,CURRENT_MAP
+		play_music(0, s2)	# normal track
+		play_music(1, s2)	# bg track
+		call RECEIVE_INPUT
 		call E_AI
-		# call MUSIC
 		
 		tempo(t0)		# Verifica o tempo atual
 		sub t0, t0, s7		# t0 = T - To (tempo atual - tempo inicial)
