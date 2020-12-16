@@ -1,6 +1,6 @@
 .include "macros.s"
 
-############## ATEN«√O #############
+############## ATEN√á√ÉO #############
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
 ####################################
@@ -61,8 +61,8 @@ GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
 
 #################################################################################
 #	Usado para fazer a limpeza inteligente do fundo				#
-#	Consiste numa queue composta por (x, y, w, z) que ser„o utilizados	#
-#	para fazer a re-renderizaÁ„o do fundo no prÛximo frame.			#
+#	Consiste numa queue composta por (x, y, w, z) que ser√£o utilizados	#
+#	para fazer a re-renderiza√ß√£o do fundo no pr√≥ximo frame.			#
 #################################################################################
 FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 
@@ -135,6 +135,8 @@ NEXT_ROUND:	# Set players state to (15 (bowing), 0, 0, 0)
 		sw zero,0(t0)
 		sw zero,4(t0)
 		
+		tempo(s7)		# Salva o tempo do come√ßo da partida no s7
+		
 		# Cycle background
 		la t0,CURRENT_MAP
 		lb t1,0(t0)
@@ -156,7 +158,17 @@ GAME_LOOP:	call RECEIVE_INPUT
 		call E_AI
 		# call MUSIC
 		
+		tempo(t0)		# Verifica o tempo atual
+		sub t0, t0, s7		# t0 = T - To (tempo atual - tempo inicial)
+		li t1, 1000
+		div t0, t0, t1		# Converte o tempo pra segundos
+		li t1, 31		# In√≠cio do cron√¥metro (31 porque o bowing ainda n√£o acaba nesse ponto)
+		sub t5, t1, t0		# t2 = 31 - t0	
+		
 		next_frame(s0)
+		
+		print_clock()		# Printa o rel√≥gio
+		
 		#################################################
 		#	Limpeza inteligente do background	#
 		#################################################
@@ -188,11 +200,11 @@ GAME_LOOP:	call RECEIVE_INPUT
 		#	s0 = frame a desenhar			#
 		#	s1 = coordenada x			#
 		#	s2 = coordenada y			#
-		#	s3 = endereÁo da coordenada do jogador	#
+		#	s3 = endere√ßo da coordenada do jogador	#
 		#	s4 = offset y do sprite			#
 		#	s5 = multiplicador (1 = P1, -1 = P2)	#
-		#	s6 = endereÁo de estado			#
-		#	s9 = endereÁo de retorno		#
+		#	s6 = endere√ßo de estado			#
+		#	s9 = endere√ßo de retorno		#
 		#################################################
 		
 		#########################
@@ -316,8 +328,8 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		jr s9
 
 #########################################################################################
-#	NÛs tivemos que usar essa soluÁ„o por que o alcance da instruÁ„o 'beq'		#
-#	È menor que da instruÁ„o 'jump' e isso estava limitando o desenvolvimento.	#
+#	N√≥s tivemos que usar essa solu√ß√£o por que o alcance da instru√ß√£o 'beq'		#
+#	√© menor que da instru√ß√£o 'jump' e isso estava limitando o desenvolvimento.	#
 #########################################################################################
 A_STATIC_CHAR:	j STATIC_CHAR
 A_MID_KICK: 	j MID_KICK
