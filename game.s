@@ -36,9 +36,11 @@ P1_STATE:	.byte 0, 0		# attack, curr sprite
 P1_WALKING:	.byte 0, 0		# direction, curr sprite
 P1_POS:		.half 32, 168		# top left x, y
 
+
 P2_STATE:	.byte 0, 0
 P2_WALKING:	.byte 0, 0
 P2_POS:		.half 240, 168
+
 
 P1_HITBOX:	.byte 0, 0, 0, 0
 P2_HITBOX:	.byte 0, 0, 0, 0
@@ -48,6 +50,9 @@ P2_HURTBOX:	.byte 22, 1, 10, 53
 
 DEF_HURTBOX:	.byte 16, 1, 10, 53
 DEF_R_HURTBOX:	.byte 22, 1, 10, 53
+
+P1_SCORE:	.byte 0			# ying-yang count
+P2_SCORE:	.byte 0
 
 #################################
 #	    MAP TABLE		#
@@ -179,7 +184,8 @@ GAME_LOOP:	lb s2,CURRENT_MAP
 		
 		next_frame(s0)
 		
-		print_clock()		# Printa o relÃ³gio
+		print_clock()
+		print_score()
 		
 		#################################################
 		#	Limpeza inteligente do background	#
@@ -930,9 +936,10 @@ BOW_1:		render(bow_2, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
-#	DEATH MOVEMENT (?)		#
+#	         DEATH			#
 #########################################
-DEATH:		lbu t0,1(s6)
+DEATH:		# Animation
+		lbu t0,1(s6)
 		
 		beqz t0,DEATH_0
 		li t1,1
@@ -942,6 +949,46 @@ DEATH:		lbu t0,1(s6)
 		li t1,5
 		blt t0,t1,DEATH_3
 		
+		# Efeito Sonoro de hit
+		li a0, 50
+		li a1, 2000
+		li a2, 117
+		li a3, 127
+		li a7, 31
+		ecall
+		
+		# Pontuação
+		li t1, 56
+		div t0, s4, t1		# Divide por 56 pra descobrir qual player tá morrendo
+		xori t0, t0, 1		# Pega o player que atacou
+		beqz t0, P1_SCORES	# 0 == P1, 1 == P2
+		j P2_SCORES
+		
+P1_SCORES:	# Incrementa um ponto no score e verifica se ganhou
+		la t0, P1_SCORE		# Carrega o endereço do score
+		lb t2, 0(t0)		# t2 = pontos de P1
+		addi t2, t2, 1		# t2 += 1
+		li t1, 2
+#		beq t2, t1, P1_WINS_ANIMATION		# Win check
+		
+		sb t2, 0(t0)		# SCORE recebe o incremento
+		
+		j NEXT_ROUND
+
+P2_SCORES:
+		la t0, P2_SCORE
+		lb t2, 0(t0)
+		addi t2, t2, 1
+		li t1, 2
+#		beq t2, t1, P2_WINS_ANIMATION		# Win check
+		sb t2, 0(t0)
+
+		la t0, P2_SCORE
+		lb t0, 0(t0)
+		mv a0, t0
+		li a7, 1
+		ecall
+
 		j NEXT_ROUND
 
 DEATH_0:	render(death_1, s1, s2, 48, 56, s0, zero, s4)
@@ -1241,7 +1288,7 @@ EXIT:		li a7,10
 .include "sprites/death/death_4.data"
 
 .include "sprites/misc/clock_retangule.data"
-
+.include "sprites/misc/ying_yang.data"
 .text
 .include "render.s"
 .include "music.s"

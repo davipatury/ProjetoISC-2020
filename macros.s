@@ -372,6 +372,45 @@ mv %r, a0
 	ecall
 .end_macro
 
+#########################################################
+#		     Printa o placar			#
+#########################################################
+
+.macro print_score()
+	# Print P1_SCORE
+	la t0, P1_SCORE
+	lb t5, 0(t0)			# t5 = P1 SCORE
+	beqz t5, PRINT_P2_SCORE		# 0 pontos
+	# 1º ying-yang
+	li t1, 52			# x
+	li t2, 4			# y
+	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
+	
+	li t1, 2
+	blt t5, t1, PRINT_P2_SCORE	# if P1_SCORE < 2 than PC = PRINT_P2_SCORE
+	li t1, 76			# x
+	li t2, 4			# y
+	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2º ying-yang
+	
+PRINT_P2_SCORE:
+	# Print P2_SCORE
+	la t0, P2_SCORE
+	lb t5, 0(t0)
+	beqz t5, PS_LOOP_OUT
+	# 1º ying-yang
+	li t1, 248		# x
+	li t2, 4		# y
+	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
+	
+	li t1, 2
+	bne t5, t1,PS_LOOP_OUT	 	# if P1_SCORE != 2 than PC = PRINT_LOOP_OUT
+	li t1, 224			# x
+	li t2, 4			# y
+	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2º ying-yang
+
+PS_LOOP_OUT:
+.end_macro
+
 # MUSIC MACROS
 .macro play_music(%b, %t)
 li s1,%b
