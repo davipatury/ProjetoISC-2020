@@ -1,7 +1,7 @@
 .include "macros.s"		# Macros do c√≥digo
 .include "MACROSv21.s"		# Macros pra bitmap display
 
-############## ATEN√á√ÉO #############
+############## ATEN«√O #############
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
 ####################################
@@ -28,6 +28,7 @@
 # 12: FORWARD SOMERSAULT	#
 # 13: JUMP			#
 # 14: HIGH PUNCH		#
+# 17: BLOCK			#
 ########## MISC STATES ##########
 # 15: BOWING			#
 # 16: DEATH			#
@@ -59,11 +60,12 @@ DEF_R_HURTBOX:	.byte 22, 1, 10, 53
 #################################
 CURRENT_MAP:	.byte 3
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
+DIFFICULTY:	.byte 1
 
 #################################################################################
 #	Usado para fazer a limpeza inteligente do fundo				#
-#	Consiste numa queue composta por (x, y, w, z) que ser√£o utilizados	#
-#	para fazer a re-renderiza√ß√£o do fundo no pr√≥ximo frame.			#
+#	Consiste numa queue composta por (x, y, w, z) que ser„o utilizados	#
+#	para fazer a re-renderizaÁ„o do fundo no prÛximo frame.			#
 #################################################################################
 FRAME_CLR:	.word 0, 0, 0, 0, 0, 0, 0, 0
 
@@ -74,13 +76,6 @@ SPLASH:		call SETUP_MUSIC
 		render_s(splash, zero, zero, 320, 240, t0, zero, zero)
 		toggle_frame()
 		render_s(splash, zero, zero, 320, 240, zero, zero, zero)
-		
-		#li s1,0
-		#li s2,0
-		#call MUSIC
-		#li s1,1
-		#li s2,0
-		#call MUSIC
 
 SPLASH_RENDER:	lb s0,GAMEMODE
 		li s1,32
@@ -336,6 +331,9 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		
 		li t1,16
 		beq a0,t1,A_DEATH
+		
+		li t1,17
+		beq a0,t1,A_BLOCK
 						
 		jr s9
 
@@ -360,6 +358,7 @@ A_JUMP:		j JUMP
 A_HIGH_PUNCH:	j HIGH_PUNCH
 A_BOW:		j BOW
 A_DEATH:	j DEATH
+A_BLOCK:	j BLOCK
 
 #########################################
 #	MID KICK MOVEMENT		#
@@ -699,8 +698,7 @@ JAB_1:		render(jab, s1, s2, 48, 56, s0, zero, s4)
 #	CROUCH BLOCK MOVEMENT		#
 #########################################
 CROUCH_BLOCK:	lbu t0,1(s6)
-		
-		li t1,3
+		li t1,7
 		ble t0,t1,CROUCH_BLOCK_0
 		j ATTACK_END
 		
@@ -954,6 +952,17 @@ DEATH_3:	render(death_4, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 
 #########################################
+#	BLOCK MOVEMENT			#
+#########################################
+BLOCK:		lbu t0,1(s6)
+		li t1,5
+		blt t0,t1,BLOCK_0
+		j ATTACK_END
+
+BLOCK_0:	render(block, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+#########################################
 #	GENERIC ATTACK OPERATIONS	#
 #########################################
 ATTACK_ANIM_E:	li t1,1
@@ -1070,7 +1079,7 @@ RECEIVE_INPUT:	li t1,0xFF200000
   		check_key('c', RI_JAB, t0, t1)
   		check_key('x', RI_CROUCH_BLK, t0, t1)
   		check_key('z', RI_BSOMERSAULT, t0, t1)
-  		check_key('a', RI_MV_LEFT, t0, t1)
+  		check_key('a', RI_P1_MV_LEFT, t0, t1)
   		check_key('q', RI_FSOMERSAULT, t0, t1)
   		check_key('w', RI_JUMP, t0, t1)
   		check_key('e', RI_HIGH_PUNCH, t0, t1)
@@ -1133,6 +1142,22 @@ RI_MV_RIGHT:	lb t0,0(s0)
 		j REC_INPUT_END
 
 # Move left 		(press a)
+RI_P1_MV_LEFT:	distance_between(P1_POS, P2_POS, t0)
+		li t1,96
+		bgt t0,t1,RI_MV_LEFT
+		
+		lb t0,P2_STATE
+		beqz t0,RI_MV_LEFT
+		
+		lb t0,0(s0)
+		bnez t0,RI_P1_BLOCK_C
+		
+RI_P1_BLOCK:	register_attack_nc(s0, 17)
+		j REC_INPUT_END
+
+RI_P1_BLOCK_C:	li t1,17
+		beq t0,t1,RI_P1_BLOCK
+
 RI_MV_LEFT:	lb t0,0(s0)
 		bnez t0,REC_INPUT_CLN
 
@@ -1195,6 +1220,7 @@ EXIT:		li a7,10
 .include "sprites/generic/punch.data"
 .include "sprites/generic/jump.data"
 .include "sprites/generic/landing.data"
+.include "sprites/generic/block.data"
 
 .include "sprites/mid_kick/mid_kick_1.data"
 .include "sprites/mid_kick/mid_kick_2.data"

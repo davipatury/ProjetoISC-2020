@@ -1,4 +1,4 @@
-.eqv MUSIC_VOL 85
+.eqv MUSIC_VOL 40
 
 .data
 .word

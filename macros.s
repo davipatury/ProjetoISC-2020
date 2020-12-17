@@ -8,6 +8,20 @@ li %r,%imm
 mul %r,%r,%mul
 .end_macro
 
+.macro random_int(%bound)
+li a7,42
+li a0,0
+li a1,%bound
+ecall
+.end_macro
+
+.macro random_int_r(%bound)
+li a7,42
+li a0,0
+li a1,%bound
+ecall
+.end_macro
+
 #########################################################
 #	DEBUG: Imprime um inteiro armazenado em %r.	#
 #########################################################
@@ -297,11 +311,16 @@ beq %r,%r1,%label
 
 #########################################################
 #	Registra um ataque %n do Player %address	#
-#	e pula para %label.
+#	e pula para %label.				#
 #							#
-#	Para mais informaÃ§Ãµes veja ATTACK TABLE		#
+#	Para mais informações veja ATTACK TABLE		#
 #	em game.s					#
 #########################################################
+.macro register_attack_nc(%address, %n)
+li t1,%n
+sh t1,0(%address)
+.end_macro
+
 .macro register_attack(%address, %n, %label)
 lb t1,0(%address)
 bnez t1,%label
