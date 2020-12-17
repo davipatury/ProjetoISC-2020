@@ -22,6 +22,15 @@ li a1,%bound
 ecall
 .end_macro
 
+.macro play_sound(%a0, %a1, %a2, %a3)
+li a0,%a0
+li a1,%a1
+li a2,%a2
+li a3,%a3
+li a7,31
+ecall
+.end_macro
+
 #########################################################
 #	DEBUG: Imprime um inteiro armazenado em %r.	#
 #########################################################
@@ -375,20 +384,24 @@ mv %r, a0
 #	     Printa o inteiro correspondente		#
 #            aos segundos restantes do round		#
 #########################################################
+.macro print_int_screen(%r, %x, %y, %cor, %f)
+mv a0, %r		# Int a ser impresso
+li a1, %x		# Coluna
+li a2, %y		# Linha
+li a3, %cor		# Cor
+mv a4, %f		# Frame a ser impresso
+li a7, 101		# PrintInt
+ecall
+.end_macro
+
 .macro print_clock()
-	# Printa o ret√¢ngulo embaixo
-	li t0, 152		# x
-	li t1, 5		# y
-	render_s(clock_retangule, t0, t1, 20, 8, s0, zero, zero)
+# Printa o ret√¢ngulo embaixo
+li t0, 152		# x
+li t1, 5		# y
+render_s(clock_retangule, t0, t1, 20, 8, s0, zero, zero)
 	
-	# Printa o n√∫mero
-	mv a0, t5		# Int a ser impresso
-	li a1, 155		# Coluna
-	li a2, 5		# Linha
-	li a3, 0xFF		# Cor
-	mv a4, s0		# Frame a ser impresso
-	li a7, 101		# PrintInt
-	ecall
+# Printa o n√∫mero
+print_int_screen(t5, 155, 5, 0xFF, s0)
 .end_macro
 
 #########################################################
@@ -396,36 +409,36 @@ mv %r, a0
 #########################################################
 
 .macro print_score()
-	# Print P1_SCORE
-	la t0, P1_SCORE
-	lb t5, 0(t0)			# t5 = P1 SCORE
-	beqz t5, PRINT_P2_SCORE		# 0 pontos
-	# 1∫ ying-yang
-	li t1, 52			# x
-	li t2, 4			# y
-	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
+# Print P1_SCORE
+la t0, P1_SCORE
+lb t5, 0(t0)			# t5 = P1 SCORE
+beqz t5, PRINT_P2_SCORE		# 0 pontos
+# 1∫ ying-yang
+li t1, 52			# x
+li t2, 4			# y
+render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
 	
-	li t1, 2
-	blt t5, t1, PRINT_P2_SCORE	# if P1_SCORE < 2 than PC = PRINT_P2_SCORE
-	li t1, 76			# x
-	li t2, 4			# y
-	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2∫ ying-yang
+li t1, 2
+blt t5, t1, PRINT_P2_SCORE	# if P1_SCORE < 2 than PC = PRINT_P2_SCORE
+li t1, 76			# x
+li t2, 4			# y
+render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2∫ ying-yang
 	
 PRINT_P2_SCORE:
-	# Print P2_SCORE
-	la t0, P2_SCORE
-	lb t5, 0(t0)
-	beqz t5, PS_LOOP_OUT
-	# 1∫ ying-yang
-	li t1, 248		# x
-	li t2, 4		# y
-	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
+# Print P2_SCORE
+la t0, P2_SCORE
+lb t5, 0(t0)
+beqz t5, PS_LOOP_OUT
+# 1∫ ying-yang
+li t1, 248		# x
+li t2, 4		# y
+render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero)
 	
-	li t1, 2
-	bne t5, t1,PS_LOOP_OUT	 	# if P1_SCORE != 2 than PC = PRINT_LOOP_OUT
-	li t1, 224			# x
-	li t2, 4			# y
-	render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2∫ ying-yang
+li t1, 2
+bne t5, t1,PS_LOOP_OUT	 	# if P1_SCORE != 2 than PC = PRINT_LOOP_OUT
+li t1, 224			# x
+li t2, 4			# y
+render_s(ying_yang, t1, t2, 20, 20, s0, zero, zero) # else (P1_SCORE == 2) than print 2∫ ying-yang
 
 PS_LOOP_OUT:
 .end_macro

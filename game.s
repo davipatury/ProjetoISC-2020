@@ -65,7 +65,7 @@ P2_SCORE:	.byte 0
 #################################
 CURRENT_MAP:	.byte 3
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
-DIFFICULTY:	.byte 1
+DIFFICULTY:	.byte 0
 
 #################################################################################
 #	Usado para fazer a limpeza inteligente do fundo				#
@@ -109,7 +109,7 @@ SPLASH_LOOP:	li t1,0xFF200000
   		li t1,'s'
   		beq t0,t1,TOGGLE_SPLASH
   		li t1,10 # enter
-  		beq t0,t1,START_GAME
+  		beq t0,t1,NEXT_MAP
 
   		j SPLASH_LOOP
 
@@ -119,10 +119,31 @@ TOGGLE_SPLASH:	la t0,GAMEMODE
 		sb t1,0(t0)
 		j SPLASH_RENDER
 
-START_GAME:	#li a7,34
-		#la a0,P1_STATE
-		#lw a0,0(a0)
-		#ecall
+NEXT_MAP:	# Cycle background
+		la t0,CURRENT_MAP
+		lb t1,0(t0)
+		li t2,3
+		blt t1,t2,INCREMENT_MAP
+		li t1,-1
+INCREMENT_MAP:	addi t1,t1,1
+		sb t1,0(t0)
+		
+		# Draw background on both frames
+		background_offset(s0, t0)
+		next_frame(t0)
+		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
+		toggle_frame()
+		next_frame(t0)
+		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
+		
+		sh zero,P1_SCORE,t0
+		
+		la t0,DIFFICULTY
+		lb t1,0(t0)
+		addi t1,t1,1
+		sb t1,0(t0)
+		
+		tempo(s7)		# Salva o tempo do come√ßo da partida no s7
 
 NEXT_ROUND:	reset_music()
 		# Set players state to (15 (bowing), 0, 0, 0)
@@ -144,25 +165,6 @@ NEXT_ROUND:	reset_music()
 		la t0,P1_HITBOX
 		sw zero,0(t0)
 		sw zero,4(t0)
-		
-		tempo(s7)		# Salva o tempo do come√ßo da partida no s7
-		
-		# Cycle background
-		la t0,CURRENT_MAP
-		lb t1,0(t0)
-		li t2,3
-		blt t1,t2,INCREMENT_MAP
-		li t1,-1
-INCREMENT_MAP:	addi t1,t1,1
-		sb t1,0(t0)
-		
-		# Draw background on both frames
-		background_offset(s0, t0)
-		next_frame(t0)
-		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
-		toggle_frame()
-		next_frame(t0)
-		render_s(backgrounds, zero, zero, 320, 240, t0, zero, s0)
 
 GAME_LOOP:	lb s2,CURRENT_MAP
 		play_music(0, s2)	# normal track
@@ -177,7 +179,9 @@ GAME_LOOP:	lb s2,CURRENT_MAP
 		li t1, 31		# In√≠cio do cron√¥metro (31 porque o bowing ainda n√£o acaba nesse ponto)
 		sub t5, t1, t0		# t2 = 31 - t0	
 		
-		next_frame(s0)
+		blez t5,A_CHECK_WIN
+		
+GAME_LOOP_CONT:	next_frame(s0)
 		
 		print_clock()
 		print_score()
@@ -291,6 +295,8 @@ HC_P2:		la s2,P2_HITBOX
 
 HC_DEATH:	li t0,16
 		sb t0,0(s4)
+		
+		play_sound(40, 2000, 127, 127)
 
 HC_END:		jr s9
 
@@ -340,6 +346,9 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		
 		li t1,17
 		beq a0,t1,A_BLOCK
+		
+		li t1,18
+		beq a0,t1,A_WIN
 						
 		jr s9
 
@@ -365,6 +374,8 @@ A_HIGH_PUNCH:	j HIGH_PUNCH
 A_BOW:		j BOW
 A_DEATH:	j DEATH
 A_BLOCK:	j BLOCK
+A_WIN:		j WIN
+A_CHECK_WIN:	j CHECK_WIN
 
 #########################################
 #	MID KICK MOVEMENT		#
@@ -946,14 +957,8 @@ DEATH:		# Animation
 		beq t0,t1,DEATH_2
 		li t1,5
 		blt t0,t1,DEATH_3
-		
-		# Efeito Sonoro de hit
-		li a0, 50
-		li a1, 2000
-		li a2, 117
-		li a3, 127
-		li a7, 31
-		ecall
+		li t1,6
+		beq t0,t1,DEATH_3
 		
 		# PontuaÁ„o
 		li t1, 56
@@ -966,28 +971,30 @@ P1_SCORES:	# Incrementa um ponto no score e verifica se ganhou
 		la t0, P1_SCORE		# Carrega o endereÁo do score
 		lb t2, 0(t0)		# t2 = pontos de P1
 		addi t2, t2, 1		# t2 += 1
-		li t1, 2
-#		beq t2, t1, P1_WINS_ANIMATION		# Win check
-		
 		sb t2, 0(t0)		# SCORE recebe o incremento
 		
+		li t1, 2
+		bge t2, t1, P1_WINS		# Win check
 		j NEXT_ROUND
 
-P2_SCORES:
-		la t0, P2_SCORE
+P1_WINS:	li t0, 18
+		la t1, P1_STATE
+		sb t0, 0(t1)
+		j DEATH_3
+
+P2_SCORES:	la t0, P2_SCORE
 		lb t2, 0(t0)
 		addi t2, t2, 1
-		li t1, 2
-#		beq t2, t1, P2_WINS_ANIMATION		# Win check
 		sb t2, 0(t0)
-
-		la t0, P2_SCORE
-		lb t0, 0(t0)
-		mv a0, t0
-		li a7, 1
-		ecall
-
+		
+		li t1, 2
+		bge t2, t1, P2_WINS		# Win check
 		j NEXT_ROUND
+
+P2_WINS:	li t0, 18
+		la t1, P2_STATE
+		sb t0, 0(t1)
+		j DEATH_3
 
 DEATH_0:	render(death_1, s1, s2, 48, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
@@ -997,6 +1004,55 @@ DEATH_2:	render(death_3, s1, s2, 68, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
 DEATH_3:	render(death_4, s1, s2, 72, 56, s0, zero, s4)
 		j ATTACK_ANIM_E
+
+#########################################
+#	         WIN			#
+#########################################
+WIN:		# Animation
+		lbu t0,1(s6)
+		
+		beqz t0,WIN_0
+		li t1,1
+		beq t0,t1,WIN_1
+		li t1,2
+		beq t0,t1,WIN_2
+		li t1,10
+		blt t0,t1,WIN_3
+		
+		j NEXT_MAP
+		
+WIN_0:		render(end_1, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+WIN_1:		render(end_2, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+WIN_2:		render(end_3, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+WIN_3:		render(end_4, s1, s2, 48, 56, s0, zero, s4)
+		j ATTACK_ANIM_E
+
+CHECK_WIN:	lb t0,P1_SCORE
+		lb t1,P2_SCORE
+		blt t0,t1,WIN_P2
+		blt t1,t0,WIN_P1
+		j DRAW
+
+WIN_P1:		li t0, 18
+		la t1, P1_STATE
+		sb t0, 0(t1)
+		j GAME_LOOP_CONT
+
+WIN_P2:		li t0, 18
+		la t1, P2_STATE
+		sb t0, 0(t1)
+		j GAME_LOOP_CONT
+
+DRAW:		li t0, 18
+		la t1, P2_STATE
+		sb t0, 0(t1)
+		la t1, P1_STATE
+		sb t0, 0(t1)
+		j GAME_LOOP_CONT
+
 
 #########################################
 #	BLOCK MOVEMENT			#
@@ -1246,7 +1302,7 @@ RI_JUMP:	register_attack(s0, 13, REC_INPUT_CLN)
 # High punch		(press e)
 RI_HIGH_PUNCH:	register_attack(s0, 14, REC_INPUT_CLN)
 
-RI_NEXT_ROUND:	j NEXT_ROUND
+RI_NEXT_ROUND:	j P1_SCORES
 
 REC_INPUT_END:	ret	# retorna
 
@@ -1312,6 +1368,11 @@ EXIT:		li a7,10
 .include "sprites/death/death_2.data"
 .include "sprites/death/death_3.data"
 .include "sprites/death/death_4.data"
+
+.include "sprites/end/end_1.data"
+.include "sprites/end/end_2.data"
+.include "sprites/end/end_3.data"
+.include "sprites/end/end_4.data"
 
 .include "sprites/misc/clock_retangule.data"
 .include "sprites/misc/ying_yang.data"
