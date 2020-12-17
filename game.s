@@ -65,7 +65,7 @@ P2_SCORE:	.byte 0
 #################################
 CURRENT_MAP:	.byte 3
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
-DIFFICULTY:	.byte 0
+DIFFICULTY:	.byte 1
 
 #################################################################################
 #	Usado para fazer a limpeza inteligente do fundo				#
@@ -1302,7 +1302,7 @@ RI_JUMP:	register_attack(s0, 13, REC_INPUT_CLN)
 # High punch		(press e)
 RI_HIGH_PUNCH:	register_attack(s0, 14, REC_INPUT_CLN)
 
-RI_NEXT_ROUND:	j P1_SCORES
+RI_NEXT_ROUND:	j NEXT_MAP
 
 REC_INPUT_END:	ret	# retorna
 
