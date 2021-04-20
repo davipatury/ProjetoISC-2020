@@ -28,6 +28,7 @@ MUSIC:		li t0,16
 		add s0,s0,t0
 
 		lw t0,8(s0)		# last played
+		beqz t0,MUSIC_PLAY
 		tempo(t1)
 		sub t1,t1,t0		# last played - now
 		lw t0,4(s0)		# last duration
