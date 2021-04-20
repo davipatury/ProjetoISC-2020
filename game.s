@@ -1,9 +1,10 @@
-.include "macros.s"		# Macros do código
+.include "macros.s"		# Macros do codigo
 .include "MACROSv21.s"		# Macros pra bitmap display
 
-############## ATEN��O #############
+############## ATEN�AO #############
 # MUDE O VALOR ABAIXO PARA 75 CASO #
 # FOR RODAR O JOGO USANDO FPGRARS  #
+# CASO CONTRARIO, DEIXE EM 0	   #
 ####################################
 .eqv FPG_RARS 0
 
@@ -65,7 +66,7 @@ P2_SCORE:	.byte 0
 #################################
 CURRENT_MAP:	.byte 3
 GAMEMODE:	.byte 0			# 0 = one player, 1 = two player
-DIFFICULTY:	.byte 1
+DIFFICULTY:	.byte 0
 
 #################################################################################
 #	Usado para fazer a limpeza inteligente do fundo				#
@@ -143,7 +144,7 @@ INCREMENT_MAP:	addi t1,t1,1
 		addi t1,t1,1
 		sb t1,0(t0)
 		
-		tempo(s7)		# Salva o tempo do começo da partida no s7
+		tempo(s7)		# Salva o tempo do comeco da partida no s7
 
 NEXT_ROUND:	reset_music()
 		# Set players state to (15 (bowing), 0, 0, 0)
@@ -176,13 +177,13 @@ GAME_LOOP:	lb s2,CURRENT_MAP
 		sub t0, t0, s7		# t0 = T - To (tempo atual - tempo inicial)
 		li t1, 1000
 		div t0, t0, t1		# Converte o tempo pra segundos
-		li t1, 31		# Início do cronômetro (31 porque o bowing ainda não acaba nesse ponto)
+		li t1, 31		# Inicio do cronometro (31 porque o bowing ainda nao acaba nesse ponto)
 		sub t5, t1, t0		# t2 = 31 - t0	
 		
 		blez t5,A_CHECK_WIN
 		
 GAME_LOOP_CONT:	next_frame(s0)
-		
+									
 		print_clock()
 		print_score()
 		
@@ -217,13 +218,13 @@ GAME_LOOP_CONT:	next_frame(s0)
 		#	s0 = frame a desenhar			#
 		#	s1 = coordenada x			#
 		#	s2 = coordenada y			#
-		#	s3 = endereço da coordenada do jogador	#
+		#	s3 = endereco da coordenada do jogador	#
 		#	s4 = offset y do sprite			#
 		#	s5 = multiplicador (1 = P1, -1 = P2)	#
-		#	s6 = endereço de estado			#
-		#	s9 = endereço de retorno		#
+		#	s6 = endereco de estado			#
+		#	s9 = endereco de retorno		#
 		#################################################
-		
+	
 		#########################
 		#	PLAYER 1	#
 		#########################
@@ -353,8 +354,8 @@ ATTACK:		beqz a0,A_STATIC_CHAR
 		jr s9
 
 #########################################################################################
-#	Nós tivemos que usar essa solução por que o alcance da instrução 'beq'		#
-#	é menor que da instrução 'jump' e isso estava limitando o desenvolvimento.	#
+#	Nos tivemos que usar essa solucao porque o alcance da instrucao 'beq'		#
+#	eh menor que o da instrucao 'jump' e isso estava limitando o desenvolvimento.	#
 #########################################################################################
 A_STATIC_CHAR:	j STATIC_CHAR
 A_MID_KICK: 	j MID_KICK
@@ -962,7 +963,7 @@ DEATH:		# Animation
 		
 		# Pontua��o
 		li t1, 56
-		div t0, s4, t1		# Divide por 56 pra descobrir qual player t� morrendo
+		div t0, s4, t1		# Divide por 56 pra descobrir qual player ta morrendo
 		xori t0, t0, 1		# Pega o player que atacou
 		beqz t0, P1_SCORES	# 0 == P1, 1 == P2
 		j P2_SCORES
@@ -1302,7 +1303,7 @@ RI_JUMP:	register_attack(s0, 13, REC_INPUT_CLN)
 # High punch		(press e)
 RI_HIGH_PUNCH:	register_attack(s0, 14, REC_INPUT_CLN)
 
-RI_NEXT_ROUND:	j NEXT_MAP
+RI_NEXT_ROUND:	j P1_SCORES
 
 REC_INPUT_END:	ret	# retorna
 

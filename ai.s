@@ -7,7 +7,7 @@ E_AI:		lb t0,GAMEMODE
 		
 		la s0,P2_STATE
 		lbu t0,0(s0)
-		bnez t0,E_AI_C_BLOCK		# checa se já existe um movimento sendo feito
+		bnez t0,E_AI_C_BLOCK		# checa se ja existe um movimento sendo feito
 		
 		lbu t0,P1_STATE
 		li t1,16
@@ -42,7 +42,7 @@ E_AI_CONT:	random_int_r(100)
 		bgt a0,t0,E_AI_END
 		
 		li t0,27
-		bgt s1,t0,E_AI_WALK_TWDS	# se a distância for maior, anda em direção ao jogador
+		bgt s1,t0,E_AI_WALK_TWDS	# se a distancia for maior, anda em direcao ao jogador
 		
 		li t0,-56
 		blt s1,t0,E_AI_WALK_BACK

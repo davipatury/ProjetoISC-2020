@@ -1,5 +1,5 @@
 #########################################################
-#	Multiplicar conteúdo do registrador %r		#
+#	Multiplicar conte�dodo do registrador %r	#
 #	com o imediato %imm, armazenando		#
 #	o resultado em %r.				#
 #########################################################
@@ -162,7 +162,7 @@ mv %r,t4
 #		  Veja mais em render.s			#
 #########################################################
 .macro render(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereço da imagem
+la a0,%adr	# endere�o da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 li a3,%w	# width
@@ -177,7 +177,7 @@ jal RENDER
 .end_macro
 
 .macro render_s(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereço da imagem
+la a0,%adr	# endereco da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 li a3,%w	# width
@@ -189,7 +189,7 @@ jal RENDER
 .end_macro
 
 .macro render_r(%adr, %x, %y, %w, %h, %f, %x0, %y0)
-la a0,%adr	# endereço da imagem
+la a0,%adr	# endereco da imagem
 mv a1,%x	# x
 mv a2,%y	# y
 mv a3,%w	# width
@@ -201,7 +201,7 @@ jal RENDER
 .end_macro
 
 #########################################################
-#	Armazena em %r o frame atual (que está sendo	#
+#	Armazena em %r o frame atual (que estao sendo	#
 #	apresentado na tela).				#
 #########################################################
 .macro current_frame(%r)
@@ -210,7 +210,7 @@ lw %r,0(%r)
 .end_macro
 
 #########################################################
-#	Armazena em %r o próximo frame (que não está	#
+#	Armazena em %r o proximo frame (que nao estao	#
 #	sendo apresentado na tela)			#
 #########################################################
 .macro next_frame(%r)
@@ -234,7 +234,7 @@ ecall
 .end_macro
 
 #########################################################
-#	Retorna o frame pra sua posição original (0)	#
+#	Retorna o frame pra sua posicao original (0)	#
 #########################################################
 .macro reset_frame()
 li t0,0xFF200604
@@ -253,9 +253,9 @@ mul %r,%r,%r1
 
 #########################################################
 #	Incrementa o valor do registrador $r1 * %mul	#
-#	a posição do endereço %pos + %imm utilizando	#
+#	a posicao do endereco %pos + %imm utilizando	#
 #	%r2 a %r4 como suporte, sendo %mw a largura	#
-#	máxima que o sprite pode alcançar.		#
+#	maxima que o sprite pode alcancar.		#
 #########################################################
 .macro increment_pos_x(%pos, %r1, %imm, %mul, %mw, %r2, %r3, %r4)
 lhu %r2,%imm(%pos)
@@ -291,7 +291,7 @@ mul %r0,%r0,%r1
 .end_macro
 
 #########################################################
-#	Armazena a posição armazenada em %label		#
+#	Armazena a posicao armazenada em %label		#
 #	nos registradores %x e %y.			#
 #########################################################
 .macro load_pos(%label, %x, %y)
@@ -301,7 +301,7 @@ lh %y,2(%y)
 .end_macro
 
 #########################################################
-#	Armazena a posição armazenada no endereço	#
+#	Armazena a posicao armazenada no endereco	#
 #	%r nos registradores %x e %y.			#
 #########################################################
 .macro load_pos_r(%r, %x, %y)
@@ -339,7 +339,7 @@ j %label
 .end_macro
 
 #########################################################
-#	Incrementa %value ao BYTE no endereço		#
+#	Incrementa %value ao BYTE no endereco		#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro b_increment_ar(%r1, %value, %imm, %r)
@@ -349,7 +349,7 @@ sb %r,%imm(%r1)
 .end_macro
 
 #########################################################
-#	Decrementa %value do BYTE no endereço		#
+#	Decrementa %value do BYTE no endereco		#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro b_decrement_ar(%r1, %value, %imm, %r)
@@ -361,7 +361,7 @@ sb %r,%imm(%r1)
 .end_macro
 
 #########################################################
-#	Incrementa %value a HALFWORD no endereço	#
+#	Incrementa %value a HALFWORD no endereco	#
 #	%r1 + %imm usando $r como auxiliar.		#
 #########################################################
 .macro h_increment_ar(%r1, %value, %imm, %r)
@@ -395,12 +395,12 @@ ecall
 .end_macro
 
 .macro print_clock()
-# Printa o retângulo embaixo
+# Printa o retangulo embaixo
 li t0, 152		# x
 li t1, 5		# y
 render_s(clock_retangule, t0, t1, 20, 8, s0, zero, zero)
 	
-# Printa o número
+# Printa o numero
 print_int_screen(t5, 155, 5, 0xFF, s0)
 .end_macro
 

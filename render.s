@@ -11,6 +11,7 @@
 #	Usa os registradores de a0 a a7				#
 #	Usa os registradores de t0 a t4				#
 #################################################################
+
 .text
 RENDER:		li t0,0xFF0	# t0 = 0xFF0
 		add a5,a5,t0	# frame = 0xFF0 + frame
