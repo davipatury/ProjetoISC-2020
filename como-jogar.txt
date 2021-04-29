@@ -1,0 +1,25 @@
+MENU:
+Para selecionar o modo de 1 ou 2 jogadores, use as teclas W e S. Aperte enter para confirmar.
+
+JOGO:
+Atenção: o jogo tem uma mecânica de botão modo de ataque, optamos por utilizar o Shift como botão de modo de ataque. Por isso os controles são case sensitive.
+
+---SEM MODO DE ATAQUE PRESSIONADO---
+Mover para esquerda/Bloquear: a
+Mover para direita: d
+Pular: w
+Defender/agachar: x
+Soco alto: e
+Soco/Jab: c
+Pulo para trás: z
+Pulo para frente: q
+
+---MODO DE ATAQUE PRESSIONADO---
+Chute pulando: W
+Chute alto para frente: E
+Chute alto para trás: Q
+Chute médio: D
+Chute baixo: C
+Rasteira para frente: X
+Rasteira para trás: Z
+Chute circular: A
